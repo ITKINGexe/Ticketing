@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>IT Help Desk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<!-- Supabase JS Client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --paper: #0F172A; 
@@ -65,12 +66,10 @@
   }
   #app { min-height: 100vh; display: flex; flex-direction: column; }
 
-  /* Top Bar */
   .topbar {
     display: flex; align-items: center; justify-content: space-between;
     padding: 18px 28px; gap: 12px; flex-wrap: wrap;
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--line);
+    backdrop-filter: blur(12px); border-bottom: 1px solid var(--line);
   }
   .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
   .brand .dot {
@@ -82,8 +81,7 @@
     font-family: var(--font-display); font-size: 13px; font-weight: 700;
     border: 1px solid var(--line); background: var(--surface); color: var(--ink);
     border-radius: 999px; padding: 9px 16px; cursor: pointer;
-    transition: all .2s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: var(--shadow-sm);
+    transition: all .2s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: var(--shadow-sm);
   }
   select.control:hover, button.control:hover {
     transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 6px 16px var(--accent-glow);
@@ -97,11 +95,9 @@
 
   main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px 16px 60px; }
 
-  /* Glass Card */
   .card {
     width: 100%; max-width: 480px; background: var(--surface-glass);
-    backdrop-filter: blur(16px);
-    border: 1px solid var(--line); border-radius: var(--radius-lg);
+    backdrop-filter: blur(16px); border: 1px solid var(--line); border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md); padding: 32px 28px; margin-top: 12px;
     animation: fadeIn .3s ease-out;
   }
@@ -110,19 +106,15 @@
   .card h1 { font-size: 24px; margin: 0 0 6px; letter-spacing: -0.03em; font-weight: 800; }
   .card .sub { color: var(--ink-soft); font-size: 14px; margin: 0 0 24px; line-height: 1.5; font-weight: 500; }
 
-  /* Form Fields */
   .field { margin-bottom: 18px; }
   .field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--ink-soft); }
   .field input, .field select, .field textarea {
     width: 100%; font-family: var(--font-display); font-size: 15px; color: var(--ink);
     background: var(--surface-2); border: 1.5px solid var(--line); border-radius: var(--radius-sm);
-    padding: 13px 16px; outline: none;
-    transition: all .2s ease;
+    padding: 13px 16px; outline: none; transition: all .2s ease;
   }
   .field textarea { resize: vertical; min-height: 90px; }
-  .field input:hover, .field select:hover, .field textarea:hover {
-    border-color: var(--accent); transform: translateY(-1px);
-  }
+  .field input:hover, .field select:hover, .field textarea:hover { border-color: var(--accent); transform: translateY(-1px); }
   .field input:focus, .field select:focus, .field textarea:focus {
     border-color: var(--progress); background: var(--surface);
     box-shadow: 0 0 0 4px var(--progress-soft); transform: translateY(-1px);
@@ -140,13 +132,9 @@
   .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); opacity: 0.95; }
   .btn-primary:active { transform: translateY(0); }
 
-  .notice {
-    border-radius: var(--radius-md); padding: 16px; font-size: 14px; line-height: 1.5;
-    margin-bottom: 20px; border: 1.5px solid; font-weight: 600;
-  }
+  .notice { border-radius: var(--radius-md); padding: 16px; font-size: 14px; line-height: 1.5; margin-bottom: 20px; border: 1.5px solid; font-weight: 600; }
   .notice.warn { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); }
 
-  /* Ticker Board */
   .board-wrap { display: flex; justify-content: center; margin: 12px 0 24px; perspective: 1000px; }
   .board {
     display: flex; gap: 6px; background: var(--board-bg); padding: 14px 16px; border-radius: var(--radius-md);
@@ -161,7 +149,6 @@
   .board .tile::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(0, 0, 0, 0.6); }
   .board .tile.dash { background: transparent; color: var(--ink-faint); text-shadow: none; width: 14px; }
 
-  /* Status Page */
   .status-center { text-align: center; }
   .status-pill {
     display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 999px;
@@ -191,21 +178,18 @@
 
   .ping-btn {
     width: 100%; padding: 16px 20px; border: 1.5px solid var(--danger); border-radius: 999px;
-    background: var(--danger-soft); color: var(--danger); font-weight: 800; font-size: 15px; cursor: pointer;
-    transition: all .2s ease;
+    background: var(--danger-soft); color: var(--danger); font-weight: 800; font-size: 15px; cursor: pointer; transition: all .2s ease;
   }
   .ping-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px var(--danger-soft); }
   .ping-btn:disabled { opacity: .5; cursor: not-allowed; }
 
-  /* Admin */
   .admin-shell { width: 100%; max-width: 1200px; animation: fadeIn .3s ease-out; }
   .admin-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
   .admin-top h1 { font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.02em; }
   .admin-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
   .admin-filters input[type="text"] {
     padding: 10px 18px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface);
-    font-family: var(--font-display); font-size: 13.5px; color: var(--ink); min-width: 200px; outline: none;
-    transition: all .2s ease;
+    font-family: var(--font-display); font-size: 13.5px; color: var(--ink); min-width: 200px; outline: none; transition: all .2s ease;
   }
   .admin-filters input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
 
@@ -235,14 +219,8 @@
   .tcard-num { font-family: var(--font-mono); font-weight: 800; font-size: 14px; color: var(--ink); }
   .tcard-name { font-weight: 800; font-size: 15px; margin-top: 4px; }
   .tcard-meta { color: var(--ink-soft); font-size: 12.5px; margin-top: 4px; line-height: 1.5; }
-  .tcard-problem {
-    display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 700; padding: 4px 10px;
-    border-radius: 999px; background: var(--surface-2); color: var(--ink-soft);
-  }
-  .tcard-pinged {
-    margin-top: 10px; font-size: 12px; font-weight: 800; color: var(--danger);
-    display: flex; align-items: center; gap: 6px;
-  }
+  .tcard-problem { display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--ink-soft); }
+  .tcard-pinged { margin-top: 10px; font-size: 12px; font-weight: 800; color: var(--danger); display: flex; align-items: center; gap: 6px; }
   .tcard-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
   .tcard-actions button {
     font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line);
@@ -260,20 +238,15 @@
   .msg-box textarea:focus { border-color: var(--progress); outline: none; }
   .msg-box button { margin-top: 8px; }
 
-  .history-toggle {
-    text-align: center; margin: 28px 0 12px; font-size: 14px; font-weight: 700; color: var(--ink-soft);
-    cursor: pointer; text-decoration: underline; text-underline-offset: 4px;
-  }
+  .history-toggle { text-align: center; margin: 28px 0 12px; font-size: 14px; font-weight: 700; color: var(--ink-soft); cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
   .history-list { display: none; }
   .history-list.open { display: block; }
   .history-row {
     display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px;
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); margin-bottom: 8px; font-size: 13px;
   }
-
   .empty-note { color: var(--ink-faint); font-size: 13.5px; text-align: center; padding: 24px 0; font-weight: 500; }
 
-  /* Toast */
   #toast {
     position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
     background: var(--ink); color: var(--paper); padding: 12px 24px; border-radius: 999px;
@@ -294,6 +267,11 @@
 <div id="toast"></div>
 
 <script>
+/* SUPABASE CLIENT CONFIGURATION */
+const SUPABASE_URL = 'https://txrgybgxsiinucnbpdut.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_cqEqybwfXw441kyX_Yxp_g_trr9H1OR';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 /* CONFIG / DATA */
 const TEAMS = ["Ankit","Asim","Bilal","Faisal","Majid","Martin","Obed","Sarina","Sheila","Wahab"];
 const BRANCHES = ["Ajman","Al Amiri","DIB","Excellence"];
@@ -304,7 +282,6 @@ const PROBLEMS = [
 ];
 const ADMIN_PASSCODE = "ITDESK2026";
 const PING_COOLDOWN_MS = 15*60*1000;
-const SYNC_MS = 4000;
 const TICK_MS = 1000;
 
 /* TRANSLATIONS */
@@ -523,82 +500,84 @@ function countdown(ms){
   return m+':'+pad2(r);
 }
 
-/* ROBUST STORAGE HELPERS (Fix for GitHub Pages) */
-async function sGet(key, shared){
-  try{
-    if(typeof window !== 'undefined' && window.storage && typeof window.storage.get === 'function'){
-      const r = await window.storage.get(key, !!shared);
-      return r ? r.value : null;
-    }
-  } catch(e){}
+/* SUPABASE MAPPING & STORAGE HELPERS */
+function mapFromDb(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    ticketNumber: row.ticket_number,
+    name: row.name,
+    employeeId: row.employee_id,
+    team: row.team,
+    branch: row.branch,
+    problem: row.problem,
+    description: row.description || '',
+    status: row.status,
+    submittedAt: Number(row.submitted_at),
+    calledAt: row.called_at ? Number(row.called_at) : null,
+    lastPingAt: row.last_ping_at ? Number(row.last_ping_at) : null,
+    pingCount: row.ping_count || 0,
+    message: row.message || null,
+    messageAt: row.message_at ? Number(row.message_at) : null
+  };
+}
+
+function mapToDb(t) {
+  return {
+    id: t.id,
+    ticket_number: t.ticketNumber,
+    name: t.name,
+    employee_id: t.employeeId,
+    team: t.team,
+    branch: t.branch,
+    problem: t.problem,
+    description: t.description || '',
+    status: t.status,
+    submitted_at: t.submittedAt,
+    called_at: t.calledAt,
+    last_ping_at: t.lastPingAt,
+    ping_count: t.pingCount,
+    message: t.message,
+    message_at: t.messageAt
+  };
+}
+
+async function getTicket(id) {
+  if (!id) return null;
   try {
-    return localStorage.getItem((shared?'shared_':'local_')+key);
+    const { data, error } = await supabase.from('tickets').select('*').eq('id', id).maybeSingle();
+    if (error || !data) return null;
+    return mapFromDb(data);
   } catch(e) { return null; }
 }
 
-async function sSet(key, value, shared){
-  try{
-    if(typeof window !== 'undefined' && window.storage && typeof window.storage.set === 'function'){
-      return await window.storage.set(key, value, !!shared);
-    }
-  } catch(e){}
+async function saveTicket(t) {
   try {
-    localStorage.setItem((shared?'shared_':'local_')+key, value);
-  } catch(e){}
+    const dbRecord = mapToDb(t);
+    await supabase.from('tickets').upsert(dbRecord);
+  } catch(e) {}
 }
 
-async function sList(prefix, shared){
-  try{
-    if(typeof window !== 'undefined' && window.storage && typeof window.storage.list === 'function'){
-      const r = await window.storage.list(prefix, !!shared);
-      return r ? r.keys : [];
-    }
-  } catch(e){}
+async function listTickets() {
   try {
-    const keys = [];
-    const pfx = (shared?'shared_':'local_')+prefix;
-    for(let i=0; i<localStorage.length; i++){
-      const k = localStorage.key(i);
-      if(k && k.startsWith(pfx)){
-        keys.push(k.replace(shared?'shared_':'local_',''));
-      }
-    }
-    return keys;
-  } catch(e){ return []; }
+    const { data, error } = await supabase.from('tickets').select('*').order('submitted_at', { ascending: true });
+    if (error || !data) return [];
+    return data.map(mapFromDb);
+  } catch(e) { return []; }
+}
+
+async function nextTicketNumber(branch) {
+  const code = BRANCH_CODES[branch] || 'GEN';
+  const day = todayKey();
+  const all = await listTickets();
+  const sameBranchToday = all.filter(t => t.branch === branch && t.ticketNumber && t.ticketNumber.includes(`-${day}-`));
+  const n = sameBranchToday.length + 1;
+  return code + '-' + day + '-' + String(n).padStart(3, '0');
 }
 
 async function setRoute(newRoute){
   state.route = newRoute;
-  await sSet('current_route', newRoute, false);
-}
-
-async function getTicket(id){
-  const v = await sGet('ticket:'+id, true);
-  if(!v) return null;
-  try{ return JSON.parse(v); }catch(e){ return null; }
-}
-async function saveTicket(t){
-  await sSet('ticket:'+t.id, JSON.stringify(t), true);
-}
-async function listTickets(){
-  const keys = await sList('ticket:', true);
-  const out = [];
-  for(const k of keys){
-    const v = await sGet(k, true);
-    if(v){ try{ out.push(JSON.parse(v)); }catch(e){} }
-  }
-  out.sort((a,b)=>a.submittedAt-b.submittedAt);
-  return out;
-}
-async function nextTicketNumber(branch){
-  const code = BRANCH_CODES[branch] || 'GEN';
-  const day = todayKey();
-  const key = 'counter:'+code+':'+day;
-  let n = 1;
-  const cur = await sGet(key, true);
-  if(cur){ n = (parseInt(cur,10)||0) + 1; }
-  await sSet(key, String(n), true);
-  return code+'-'+day+'-'+String(n).padStart(3,'0');
+  try { localStorage.setItem('current_route', newRoute); } catch(e) {}
 }
 
 /* AUDIO / VIBRATION */
@@ -732,6 +711,7 @@ function renderForm(){
   `;
   bindForm();
 }
+
 function bindForm(){
   const form = document.getElementById('ticket-form');
   const $ = id=>document.getElementById(id);
@@ -746,6 +726,7 @@ function bindForm(){
   $('f-desc') && $('f-desc').addEventListener('input', e=>state.formState.description = e.target.value);
   form.addEventListener('submit', onSubmitTicket);
 }
+
 async function onSubmitTicket(e){
   e.preventDefault();
   unlockAudio();
@@ -767,7 +748,7 @@ async function onSubmitTicket(e){
   if(openOne){
     state.duplicateInfo = openOne.ticketNumber;
     state.myTicketId = openOne.id;
-    await sSet('my-ticket-id', openOne.id, false);
+    try { localStorage.setItem('my-ticket-id', openOne.id); } catch(err) {}
     submitBtn.disabled=false; submitBtn.style.opacity='1';
     renderForm();
     return;
@@ -783,7 +764,7 @@ async function onSubmitTicket(e){
     lastPingAt:null, pingCount:0, message:null, messageAt:null
   };
   await saveTicket(ticket);
-  await sSet('my-ticket-id', ticket.id, false);
+  try { localStorage.setItem('my-ticket-id', ticket.id); } catch(err) {}
   state.myTicketId = ticket.id;
   state.prevStatus = 'waiting';
   state.formState = {name:'',employeeId:'',team:'',branch:'',problem:'',description:''};
@@ -1112,7 +1093,7 @@ document.addEventListener('click', e=>{
   if(newTicket){
     (async ()=>{
       state.myTicketId = null; state.prevStatus = undefined;
-      await sSet('my-ticket-id', '', false);
+      try { localStorage.setItem('my-ticket-id', ''); } catch(err) {}
       await setRoute('form');
       state.duplicateInfo=null; state.formError=null;
       renderForm();
@@ -1123,27 +1104,32 @@ document.addEventListener('click', e=>{
 document.addEventListener('change', e=>{
   if(e.target.id === 'lang-select'){
     state.lang = e.target.value;
-    sSet('lang', state.lang, false);
+    try { localStorage.setItem('lang', state.lang); } catch(err) {}
     renderCurrentRoute();
   }
 });
+
 document.addEventListener('click', e=>{
   if(e.target.id === 'theme-toggle'){
     state.theme = state.theme==='light' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', state.theme);
-    sSet('theme', state.theme, false);
+    try { localStorage.setItem('theme', state.theme); } catch(err) {}
     renderCurrentRoute();
   }
 }, true);
 
 document.addEventListener('click', unlockAudio, {once:true});
 
-/* SYNC / TICK LOOPS */
-setInterval(()=>{
-  if(state.route==='status') renderStatus();
-  else if(state.route==='admin') renderAdmin();
-}, SYNC_MS);
+/* REALTIME MULTI-DEVICE SYNC */
+supabase
+  .channel('public:tickets')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
+    if (state.route === 'admin') renderAdmin();
+    if (state.route === 'status') renderStatus();
+  })
+  .subscribe();
 
+/* TICK LOOP FOR COUNTDOWNS */
 setInterval(()=>{
   const pingBtn = document.getElementById('ping-btn');
   if(pingBtn && state.ticketSnapshot && state.ticketSnapshot.lastPingAt){
@@ -1159,17 +1145,17 @@ setInterval(()=>{
 /* INIT */
 (async function init(){
   try {
-    const savedLang = await sGet('lang', false);
+    const savedLang = localStorage.getItem('lang');
     if(savedLang) state.lang = savedLang;
     
-    const savedTheme = await sGet('theme', false);
+    const savedTheme = localStorage.getItem('theme');
     if(savedTheme){
       state.theme = savedTheme;
       document.documentElement.setAttribute('data-theme', savedTheme);
     }
 
-    const savedRoute = await sGet('current_route', false);
-    const savedTicketId = await sGet('my-ticket-id', false);
+    const savedRoute = localStorage.getItem('current_route');
+    const savedTicketId = localStorage.getItem('my-ticket-id');
 
     if(savedTicketId){
       state.myTicketId = savedTicketId;
@@ -1182,9 +1168,7 @@ setInterval(()=>{
     } else if(savedTicketId){
       state.route = 'status';
     }
-  } catch(err) {
-    console.warn("Storage init warning:", err);
-  }
+  } catch(err) {}
 
   renderCurrentRoute();
 })();
