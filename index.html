@@ -1,276 +1,10 @@
-<!DOCTYPE html>
-<html lang="en" data-theme="light">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>IT Help Desk</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
-<!-- Supabase JS Client -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  :root {
-    --paper: #0F172A; 
-    --bg-gradient: radial-gradient(circle at 50% -20%, #1E293B, #0F172A);
-    --surface: #1E293B; 
-    --surface-2: #334155;
-    --surface-glass: rgba(30, 41, 59, 0.7);
-    --ink: #F8FAFC; 
-    --ink-soft: #94A3B8; 
-    --ink-faint: #64748B;
-    --line: rgba(255, 255, 255, 0.1);
-    --accent: #F59E0B; 
-    --accent-glow: rgba(245, 158, 11, 0.25);
-    --go: #10B981; 
-    --go-soft: rgba(16, 185, 129, 0.15);
-    --progress: #3B82F6; 
-    --progress-soft: rgba(59, 130, 246, 0.15);
-    --danger: #EF4444; 
-    --danger-soft: rgba(239, 68, 68, 0.15);
-    --board-bg: #030712; 
-    --board-amber: #F59E0B;
-    --radius-lg: 24px; 
-    --radius-md: 16px; 
-    --radius-sm: 12px;
-    --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
-    --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.4);
-    --font-display: 'Plus Jakarta Sans', -apple-system, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-  }
-  [data-theme="light"] {
-    --paper: #F8FAFC;
-    --bg-gradient: radial-gradient(circle at 50% -20%, #E2E8F0, #F8FAFC);
-    --surface: #FFFFFF;
-    --surface-2: #F1F5F9;
-    --surface-glass: rgba(255, 255, 255, 0.8);
-    --ink: #0F172A;
-    --ink-soft: #475569;
-    --ink-faint: #94A3B8;
-    --line: rgba(15, 23, 42, 0.08);
-    --accent-glow: rgba(245, 158, 11, 0.15);
-    --shadow-sm: 0 4px 12px rgba(15, 23, 42, 0.04);
-    --shadow-md: 0 16px 36px rgba(15, 23, 42, 0.08);
-  }
-
-  * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
-  body {
-    background: var(--paper);
-    background-image: var(--bg-gradient);
-    color: var(--ink);
-    font-family: var(--font-display);
-    -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
-    transition: background .25s ease, color .25s ease;
-  }
-  #app { min-height: 100vh; display: flex; flex-direction: column; }
-
-  .topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 18px 28px; gap: 12px; flex-wrap: wrap;
-    backdrop-filter: blur(12px); border-bottom: 1px solid var(--line);
-  }
-  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 18px; letter-spacing: -0.02em; }
-  .brand .dot {
-    width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
-    box-shadow: 0 0 12px var(--accent);
-  }
-  .topbar-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-  select.control, button.control {
-    font-family: var(--font-display); font-size: 13px; font-weight: 700;
-    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
-    border-radius: 999px; padding: 9px 16px; cursor: pointer;
-    transition: all .2s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: var(--shadow-sm);
-  }
-  select.control:hover, button.control:hover {
-    transform: translateY(-2px); border-color: var(--accent); box-shadow: 0 6px 16px var(--accent-glow);
-  }
-  button.iconbtn {
-    width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--line); background: var(--surface); cursor: pointer; font-size: 16px;
-    transition: all .2s ease; box-shadow: var(--shadow-sm);
-  }
-  button.iconbtn:hover { transform: translateY(-2px) rotate(-8deg); border-color: var(--accent); }
-
-  main { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 20px 16px 60px; }
-
-  .card {
-    width: 100%; max-width: 480px; background: var(--surface-glass);
-    backdrop-filter: blur(16px); border: 1px solid var(--line); border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-md); padding: 32px 28px; margin-top: 12px;
-    animation: fadeIn .3s ease-out;
-  }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-  .card h1 { font-size: 24px; margin: 0 0 6px; letter-spacing: -0.03em; font-weight: 800; }
-  .card .sub { color: var(--ink-soft); font-size: 14px; margin: 0 0 24px; line-height: 1.5; font-weight: 500; }
-
-  .field { margin-bottom: 18px; }
-  .field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--ink-soft); }
-  .field input, .field select, .field textarea {
-    width: 100%; font-family: var(--font-display); font-size: 15px; color: var(--ink);
-    background: var(--surface-2); border: 1.5px solid var(--line); border-radius: var(--radius-sm);
-    padding: 13px 16px; outline: none; transition: all .2s ease;
-  }
-  .field textarea { resize: vertical; min-height: 90px; }
-  .field input:hover, .field select:hover, .field textarea:hover { border-color: var(--accent); transform: translateY(-1px); }
-  .field input:focus, .field select:focus, .field textarea:focus {
-    border-color: var(--progress); background: var(--surface);
-    box-shadow: 0 0 0 4px var(--progress-soft); transform: translateY(-1px);
-  }
-  .field.err input, .field.err select, .field.err textarea { border-color: var(--danger); }
-  .field .errtext { color: var(--danger); font-size: 12px; margin-top: 6px; font-weight: 700; display: none; }
-  .field.err .errtext { display: block; }
-
-  .btn-primary {
-    width: 100%; padding: 16px 20px; border: none; border-radius: 999px;
-    background: var(--ink); color: var(--paper); font-family: var(--font-display);
-    font-weight: 800; font-size: 15px; cursor: pointer; margin-top: 8px;
-    transition: all .2s ease; box-shadow: var(--shadow-sm);
-  }
-  .btn-primary:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); opacity: 0.95; }
-  .btn-primary:active { transform: translateY(0); }
-
-  .notice { border-radius: var(--radius-md); padding: 16px; font-size: 14px; line-height: 1.5; margin-bottom: 20px; border: 1.5px solid; font-weight: 600; }
-  .notice.warn { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); }
-
-  .board-wrap { display: flex; justify-content: center; margin: 12px 0 24px; perspective: 1000px; }
-  .board {
-    display: flex; gap: 6px; background: var(--board-bg); padding: 14px 16px; border-radius: var(--radius-md);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), var(--shadow-md);
-  }
-  .board .tile {
-    position: relative; width: 30px; height: 44px; background: linear-gradient(180deg, #1f293d 0%, #111827 100%);
-    border-radius: 6px; display: flex; align-items: center; justify-content: center;
-    font-family: var(--font-mono); font-weight: 800; font-size: 22px; color: var(--board-amber);
-    text-shadow: 0 0 12px rgba(245, 158, 11, 0.6); overflow: hidden;
-  }
-  .board .tile::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(0, 0, 0, 0.6); }
-  .board .tile.dash { background: transparent; color: var(--ink-faint); text-shadow: none; width: 14px; }
-
-  .status-center { text-align: center; }
-  .status-pill {
-    display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 999px;
-    font-weight: 800; font-size: 13px; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 0.04em;
-  }
-  .status-pill.waiting { background: var(--accent-glow); color: var(--accent); }
-  .status-pill.called { background: var(--go-soft); color: var(--go); }
-  .status-pill.in_progress { background: var(--progress-soft); color: var(--progress); }
-  .status-pill.resolved, .status-pill.cancelled { background: var(--surface-2); color: var(--ink-soft); }
-  .status-pill .blip { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-
-  .queue-num { font-family: var(--font-mono); font-weight: 800; font-size: 64px; line-height: 1; margin: 4px 0; color: var(--accent); }
-  .queue-label { color: var(--ink-soft); font-size: 14px; font-weight: 600; margin-bottom: 24px; }
-
-  .called-banner {
-    background: var(--go); color: #022C22; border-radius: var(--radius-md); padding: 18px; font-weight: 800;
-    font-size: 16px; margin-bottom: 22px; animation: pulseGlow 1.6s ease-in-out infinite;
-  }
-  @keyframes pulseGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); } 50% { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); } }
-
-  .message-card {
-    text-align: left; background: var(--progress-soft); border: 1px solid rgba(59, 130, 246, 0.3);
-    border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;
-  }
-  .message-card .m-title { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: var(--progress); margin-bottom: 6px; }
-  .message-card .m-body { font-size: 15px; line-height: 1.5; color: var(--ink); }
-
-  .ping-btn {
-    width: 100%; padding: 16px 20px; border: 1.5px solid var(--danger); border-radius: 999px;
-    background: var(--danger-soft); color: var(--danger); font-weight: 800; font-size: 15px; cursor: pointer; transition: all .2s ease;
-  }
-  .ping-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px var(--danger-soft); }
-  .ping-btn:disabled { opacity: .5; cursor: not-allowed; }
-
-  .admin-shell { width: 100%; max-width: 1200px; animation: fadeIn .3s ease-out; }
-  .admin-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
-  .admin-top h1 { font-size: 24px; margin: 0; font-weight: 800; letter-spacing: -0.02em; }
-  .admin-filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-  .admin-filters input[type="text"] {
-    padding: 10px 18px; border-radius: 999px; border: 1.5px solid var(--line); background: var(--surface);
-    font-family: var(--font-display); font-size: 13.5px; color: var(--ink); min-width: 200px; outline: none; transition: all .2s ease;
-  }
-  .admin-filters input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
-
-  .lanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-  @media (max-width: 960px) { .lanes { grid-template-columns: 1fr; } }
-  .lane { background: var(--surface-glass); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 18px; min-height: 140px; }
-  .lane-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .lane-title { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 14px; }
-  .lane-title .swatch { width: 10px; height: 10px; border-radius: 50%; }
-  .lane.waiting .swatch { background: var(--accent); }
-  .lane.called .swatch { background: var(--go); }
-  .lane.in_progress .swatch { background: var(--progress); }
-  .lane-count { font-family: var(--font-mono); font-size: 13px; color: var(--ink-faint); font-weight: 700; }
-  .call-selected-btn {
-    font-size: 12px; font-weight: 800; padding: 8px 14px; border-radius: 999px; border: none;
-    background: var(--ink); color: var(--paper); cursor: pointer; transition: transform .15s ease;
-  }
-  .call-selected-btn:hover { transform: translateY(-1px); }
-  .call-selected-btn:disabled { opacity: .35; cursor: not-allowed; }
-
-  .tcard {
-    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
-    padding: 16px; margin-bottom: 12px; transition: all .2s ease;
-  }
-  .tcard:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); border-color: var(--accent); }
-  .tcard-top { display: flex; align-items: flex-start; gap: 8px; justify-content: space-between; }
-  .tcard-num { font-family: var(--font-mono); font-weight: 800; font-size: 14px; color: var(--ink); }
-  .tcard-name { font-weight: 800; font-size: 15px; margin-top: 4px; }
-  .tcard-meta { color: var(--ink-soft); font-size: 12.5px; margin-top: 4px; line-height: 1.5; }
-  .tcard-problem { display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--ink-soft); }
-  .tcard-pinged { margin-top: 10px; font-size: 12px; font-weight: 800; color: var(--danger); display: flex; align-items: center; gap: 6px; }
-  .tcard-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-  .tcard-actions button {
-    font-size: 12px; font-weight: 700; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line);
-    background: var(--surface-2); color: var(--ink); cursor: pointer; transition: all .15s ease;
-  }
-  .tcard-actions button:hover { transform: translateY(-1px); border-color: var(--accent); }
-  .tcard-actions button.danger:hover { border-color: var(--danger); color: var(--danger); }
-  .tcard-select { margin-right: 4px; margin-top: 3px; }
-  .msg-box { margin-top: 12px; display: none; }
-  .msg-box.open { display: block; }
-  .msg-box textarea {
-    width: 100%; font-family: var(--font-display); font-size: 13px; border: 1.5px solid var(--line);
-    border-radius: 10px; padding: 10px; min-height: 60px; background: var(--surface-2); color: var(--ink);
-  }
-  .msg-box textarea:focus { border-color: var(--progress); outline: none; }
-  .msg-box button { margin-top: 8px; }
-
-  .history-toggle { text-align: center; margin: 28px 0 12px; font-size: 14px; font-weight: 700; color: var(--ink-soft); cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
-  .history-list { display: none; }
-  .history-list.open { display: block; }
-  .history-row {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-sm); margin-bottom: 8px; font-size: 13px;
-  }
-  .empty-note { color: var(--ink-faint); font-size: 13.5px; text-align: center; padding: 24px 0; font-weight: 500; }
-
-  #toast {
-    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: var(--ink); color: var(--paper); padding: 12px 24px; border-radius: 999px;
-    font-size: 14px; font-weight: 700; opacity: 0; pointer-events: none; transition: all .25s ease;
-    box-shadow: var(--shadow-md); z-index: 50; white-space: nowrap;
-  }
-  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  .link-row { text-align: center; margin-top: 20px; }
-  .link-row a { color: var(--ink-faint); font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
-
-  ::selection { background: var(--accent); color: #0F172A; }
-  :focus-visible { outline: 2px solid var(--progress); outline-offset: 2px; }
-</style>
-</head>
-<body>
-<div id="app"></div>
-<div id="toast"></div>
-
 <script>
 /* SUPABASE CLIENT CONFIGURATION */
 const SUPABASE_URL = 'https://txrgybgxsiinucnbpdut.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_cqEqybwfXw441kyX_Yxp_g_trr9H1OR';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Use 'supabaseClient' to avoid variable shadowing/redeclaration syntax errors
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* CONFIG / DATA */
 const TEAMS = ["Ankit","Asim","Bilal","Faisal","Majid","Martin","Obed","Sarina","Sheila","Wahab"];
@@ -467,12 +201,12 @@ function fmt(str,params){ let out = str; for(const k in params){ out = out.repla
 /* STATE */
 const state = {
   route:'form', lang:'en', theme:'light',
-  myTicketId:null, prevStatus:undefined,
-  isAdmin:false, adminSelected:new Set(),
+  myTicketId: localStorage.getItem('my_ticket_id') || null, 
+  prevStatus:undefined, isAdmin:false, adminSelected:new Set(),
   adminBranch:'all', adminSearch:'', adminMsgOpen:null, historyOpen:false,
   formState:{name:'',employeeId:'',team:'',branch:'',problem:'',description:''},
-  formError:null, duplicateInfo:null,
-  audioCtx:null, ticketSnapshot:null
+  formError:null, duplicateInfo:null, audioCtx:null, ticketSnapshot:null,
+  tickets:[]
 };
 
 /* UTIL */
@@ -480,12 +214,14 @@ function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(
 function pad2(n){ return n<10?'0'+n:''+n; }
 function todayKey(){ const d=new Date(); return pad2(d.getMonth()+1)+pad2(d.getDate()); }
 function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
 function toast(msg){
   const el = document.getElementById('toast');
   el.textContent = msg; el.classList.add('show');
   clearTimeout(toast._t);
   toast._t = setTimeout(()=>el.classList.remove('show'), 2400);
 }
+
 function timeAgo(ms){
   const s = Math.max(0, Math.floor((Date.now()-ms)/1000));
   if(s<60) return s+'s';
@@ -494,10 +230,29 @@ function timeAgo(ms){
   const h = Math.floor(m/60);
   return h+'h';
 }
+
 function countdown(ms){
   const s = Math.max(0, Math.ceil(ms/1000));
   const m = Math.floor(s/60); const r = s%60;
   return m+':'+pad2(r);
+}
+
+/* AUDIO ALERT */
+function playChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15); // A5
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.6);
+  } catch(e) {}
 }
 
 /* SUPABASE MAPPING & STORAGE HELPERS */
@@ -545,7 +300,7 @@ function mapToDb(t) {
 async function getTicket(id) {
   if (!id) return null;
   try {
-    const { data, error } = await supabase.from('tickets').select('*').eq('id', id).maybeSingle();
+    const { data, error } = await supabaseClient.from('tickets').select('*').eq('id', id).maybeSingle();
     if (error || !data) return null;
     return mapFromDb(data);
   } catch(e) { return null; }
@@ -554,624 +309,356 @@ async function getTicket(id) {
 async function saveTicket(t) {
   try {
     const dbRecord = mapToDb(t);
-    await supabase.from('tickets').upsert(dbRecord);
+    await supabaseClient.from('tickets').upsert(dbRecord);
   } catch(e) {}
 }
 
 async function listTickets() {
   try {
-    const { data, error } = await supabase.from('tickets').select('*').order('submitted_at', { ascending: true });
+    const { data, error } = await supabaseClient.from('tickets').select('*').order('submitted_at', { ascending: true });
     if (error || !data) return [];
     return data.map(mapFromDb);
   } catch(e) { return []; }
 }
 
-async function nextTicketNumber(branch) {
-  const code = BRANCH_CODES[branch] || 'GEN';
-  const day = todayKey();
+/* TICKET NUMBER GENERATOR */
+async function generateTicketNumber(branch) {
+  const code = BRANCH_CODES[branch] || "GEN";
+  const prefix = code + todayKey();
   const all = await listTickets();
-  const sameBranchToday = all.filter(t => t.branch === branch && t.ticketNumber && t.ticketNumber.includes(`-${day}-`));
-  const n = sameBranchToday.length + 1;
-  return code + '-' + day + '-' + String(n).padStart(3, '0');
-}
-
-async function setRoute(newRoute){
-  state.route = newRoute;
-  try { localStorage.setItem('current_route', newRoute); } catch(e) {}
-}
-
-/* AUDIO / VIBRATION */
-function unlockAudio(){
-  if(state.audioCtx) return;
-  try{
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    state.audioCtx = new Ctx();
-  }catch(e){}
-}
-function playCalledSound(){
-  try{
-    if(!state.audioCtx){ unlockAudio(); }
-    const ctx = state.audioCtx;
-    if(!ctx) return;
-    if(ctx.state === 'suspended'){ ctx.resume(); }
-    const o = ctx.createOscillator(); const g = ctx.createGain();
-    o.type = 'sine'; o.connect(g); g.connect(ctx.destination);
-    const now = ctx.currentTime;
-    g.gain.setValueAtTime(0.0001, now);
-    o.frequency.setValueAtTime(760, now);
-    g.gain.exponentialRampToValueAtTime(0.28, now+0.03);
-    o.frequency.setValueAtTime(760, now+0.14);
-    o.frequency.setValueAtTime(1000, now+0.16);
-    g.gain.exponentialRampToValueAtTime(0.0001, now+0.55);
-    o.start(now); o.stop(now+0.6);
-  }catch(e){}
-}
-function vibrateCalled(){
-  try{ if(navigator.vibrate) navigator.vibrate([220,90,220,90,320]); }catch(e){}
-}
-
-/* RENDER: SHELL */
-function topbarHtml(){
-  const langOpts = ['en','ur','hi','ne','am'].map(l=>{
-    const names = {en:'English',ur:'Roman Urdu',hi:'हिंदी',ne:'नेपाली',am:'አማርኛ'};
-    return `<option value="${l}" ${state.lang===l?'selected':''}>${names[l]}</option>`;
-  }).join('');
-
-  let navBtn = '';
-  if(state.route === 'admin' || state.route === 'admin-login'){
-    navBtn = `<button class="control" data-action="go-form">${escapeHtml(tt('backToForm'))}</button>`;
-  } else if(state.route === 'status'){
-    navBtn = `<button class="control" data-action="go-form">${escapeHtml(tt('backToForm'))}</button>`;
-  }
-
-  return `
-  <div class="topbar">
-    <div class="brand"><span class="dot"></span> ${escapeHtml(tt('appTitle'))}</div>
-    <div class="topbar-controls">
-      ${navBtn}
-      <select class="control" id="lang-select">${langOpts}</select>
-      <button class="iconbtn" id="theme-toggle" title="${escapeHtml(tt('themeLight'))}/${escapeHtml(tt('themeDark'))}">${state.theme==='light'?'🌙':'☀️'}</button>
-    </div>
-  </div>`;
-}
-function boardHtml(str, small){
-  const chars = String(str).split('');
-  const size = small ? 'small' : '';
-  return `<div class="board-wrap"><div class="board ${size}">` +
-    chars.map(c=>`<div class="tile ${c==='-'?'dash':''}">${c==='-'?'':escapeHtml(c)}</div>`).join('') +
-    `</div></div>`;
-}
-
-/* RENDER: FORM */
-function renderForm(){
-  const fs = state.formState;
-  const err = state.formError;
-  const teamOpts = TEAMS.map(t=>`<option value="${t}" ${fs.team===t?'selected':''}>Team ${t}</option>`).join('');
-  const branchOpts = BRANCHES.map(b=>`<option value="${b}" ${fs.branch===b?'selected':''}>${b} Branch</option>`).join('');
-  const problemOpts = PROBLEMS.map(p=>`<option value="${p}" ${fs.problem===p?'selected':''}>${escapeHtml(tp(p))}</option>`).join('');
-
-  document.getElementById('app').innerHTML = `
-    ${topbarHtml()}
-    <main>
-      <div class="card">
-        <h1>${escapeHtml(tt('appTitle'))}</h1>
-        <p class="sub">${escapeHtml(tt('appSubtitle'))}</p>
-
-        ${state.duplicateInfo ? `
-        <div class="notice warn">
-          <strong>${escapeHtml(tt('formDuplicateTitle'))}</strong><br>
-          ${escapeHtml(fmt(tt('formDuplicateBody'), {number: state.duplicateInfo}))}
-        </div>` : ''}
-
-        <form id="ticket-form" novalidate>
-          <div class="field ${err==='name'?'err':''}">
-            <label>${escapeHtml(tt('formNameLabel'))}</label>
-            <input type="text" id="f-name" placeholder="${escapeHtml(tt('formNamePlaceholder'))}" value="${escapeHtml(fs.name)}" autocomplete="off">
-            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
-          </div>
-          <div class="field ${err==='employeeId'?'err':''}">
-            <label>${escapeHtml(tt('formEmployeeIdLabel'))}</label>
-            <input type="number" inputmode="numeric" id="f-eid" placeholder="${escapeHtml(tt('formEmployeeIdPlaceholder'))}" value="${escapeHtml(fs.employeeId)}">
-            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
-          </div>
-          <div class="field ${err==='team'?'err':''}">
-            <label>${escapeHtml(tt('formTeamLabel'))}</label>
-            <select id="f-team">
-              <option value="" disabled ${!fs.team?'selected':''}>${escapeHtml(tt('formTeamPlaceholder'))}</option>
-              ${teamOpts}
-            </select>
-            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
-          </div>
-          <div class="field ${err==='branch'?'err':''}">
-            <label>${escapeHtml(tt('formBranchLabel'))}</label>
-            <select id="f-branch">
-              <option value="" disabled ${!fs.branch?'selected':''}>${escapeHtml(tt('formBranchPlaceholder'))}</option>
-              ${branchOpts}
-            </select>
-            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
-          </div>
-          <div class="field ${err==='problem'?'err':''}">
-            <label>${escapeHtml(tt('formProblemLabel'))}</label>
-            <select id="f-problem">
-              <option value="" disabled ${!fs.problem?'selected':''}>${escapeHtml(tt('formProblemPlaceholder'))}</option>
-              ${problemOpts}
-            </select>
-            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
-          </div>
-          <div class="field ${err==='description'?'err':''}" id="describe-wrap" style="display:${fs.problem==='Others'?'block':'none'}">
-            <label>${escapeHtml(tt('formDescribeLabel'))}</label>
-            <textarea id="f-desc" placeholder="${escapeHtml(tt('formDescribePlaceholder'))}">${escapeHtml(fs.description)}</textarea>
-            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
-          </div>
-          <button type="submit" class="btn-primary">${escapeHtml(tt('formSubmit'))}</button>
-        </form>
-        <div class="link-row"><a data-action="show-admin-login">${escapeHtml(tt('adminStaffLink'))}</a></div>
-      </div>
-    </main>
-  `;
-  bindForm();
-}
-
-function bindForm(){
-  const form = document.getElementById('ticket-form');
-  const $ = id=>document.getElementById(id);
-  $('f-name').addEventListener('input', e=>state.formState.name = e.target.value);
-  $('f-eid').addEventListener('input', e=>state.formState.employeeId = e.target.value.replace(/[^0-9]/g,''));
-  $('f-team').addEventListener('change', e=>state.formState.team = e.target.value);
-  $('f-branch').addEventListener('change', e=>state.formState.branch = e.target.value);
-  $('f-problem').addEventListener('change', e=>{
-    state.formState.problem = e.target.value;
-    document.getElementById('describe-wrap').style.display = e.target.value==='Others' ? 'block' : 'none';
+  const matching = all.filter(t => t.ticketNumber && t.ticketNumber.startsWith(prefix));
+  let maxSeq = 0;
+  matching.forEach(t => {
+    const seqStr = t.ticketNumber.slice(prefix.length);
+    const seq = parseInt(seqStr, 10);
+    if (!isNaN(seq) && seq > maxSeq) maxSeq = seq;
   });
-  $('f-desc') && $('f-desc').addEventListener('input', e=>state.formState.description = e.target.value);
-  form.addEventListener('submit', onSubmitTicket);
+  return prefix + pad2(maxSeq + 1);
 }
 
-async function onSubmitTicket(e){
+/* ACTIONS */
+async function submitForm(e) {
   e.preventDefault();
-  unlockAudio();
-  const fs = state.formState;
-  let missing = null;
-  if(!fs.name.trim()) missing='name';
-  else if(!fs.employeeId.trim()) missing='employeeId';
-  else if(!fs.team) missing='team';
-  else if(!fs.branch) missing='branch';
-  else if(!fs.problem) missing='problem';
-  else if(fs.problem==='Others' && !fs.description.trim()) missing='description';
-  if(missing){ state.formError = missing; state.duplicateInfo=null; renderForm(); return; }
-
-  const submitBtn = document.querySelector('#ticket-form button[type="submit"]');
-  submitBtn.disabled = true; submitBtn.style.opacity = '0.6';
-
-  const tickets = await listTickets();
-  const openOne = tickets.find(t => t.employeeId===fs.employeeId && ['waiting','called','in_progress'].includes(t.status));
-  if(openOne){
-    state.duplicateInfo = openOne.ticketNumber;
-    state.myTicketId = openOne.id;
-    try { localStorage.setItem('my-ticket-id', openOne.id); } catch(err) {}
-    submitBtn.disabled=false; submitBtn.style.opacity='1';
-    renderForm();
+  const f = state.formState;
+  if (!f.name || !f.employeeId || !f.team || !f.branch || !f.problem || !f.description) {
+    state.formError = tt('formRequired');
+    render();
+    return;
+  }
+  
+  const all = await listTickets();
+  const open = all.find(t => t.employeeId === f.employeeId && ['waiting','called','in_progress'].includes(t.status));
+  if (open) {
+    state.duplicateInfo = open;
+    render();
     return;
   }
 
-  const ticketNumber = await nextTicketNumber(fs.branch);
-  const ticket = {
-    id: uid(), ticketNumber,
-    name: fs.name.trim(), employeeId: fs.employeeId.trim(),
-    team: fs.team, branch: fs.branch, problem: fs.problem,
-    description: fs.problem==='Others' ? fs.description.trim() : '',
-    status:'waiting', submittedAt: Date.now(), calledAt:null,
-    lastPingAt:null, pingCount:0, message:null, messageAt:null
+  const ticketNum = await generateTicketNumber(f.branch);
+  const newTicket = {
+    id: uid(),
+    ticketNumber: ticketNum,
+    name: f.name,
+    employeeId: f.employeeId,
+    team: f.team,
+    branch: f.branch,
+    problem: f.problem,
+    description: f.description,
+    status: 'waiting',
+    submittedAt: Date.now(),
+    calledAt: null,
+    lastPingAt: null,
+    pingCount: 0,
+    message: null,
+    messageAt: null
   };
-  await saveTicket(ticket);
-  try { localStorage.setItem('my-ticket-id', ticket.id); } catch(err) {}
-  state.myTicketId = ticket.id;
-  state.prevStatus = 'waiting';
-  state.formState = {name:'',employeeId:'',team:'',branch:'',problem:'',description:''};
-  state.formError = null; state.duplicateInfo = null;
-  await setRoute('status');
-  renderStatus();
+
+  await saveTicket(newTicket);
+  state.myTicketId = newTicket.id;
+  localStorage.setItem('my_ticket_id', newTicket.id);
+  state.route = 'status';
+  state.formError = null;
+  state.duplicateInfo = null;
+  render();
 }
 
-/* RENDER: STATUS */
-async function renderStatus(){
-  const t = await getTicket(state.myTicketId);
-  if(!t){
-    await setRoute('form'); state.myTicketId=null;
-    renderForm(); return;
-  }
-  state.ticketSnapshot = t;
-  if(state.prevStatus===undefined) state.prevStatus = t.status;
-
-  let queuePos = null;
-  if(t.status==='waiting'){
-    const all = await listTickets();
-    const waitingSameBranch = all.filter(x=>x.branch===t.branch && x.status==='waiting');
-    const idx = waitingSameBranch.findIndex(x=>x.id===t.id);
-    queuePos = idx>=0 ? idx : waitingSameBranch.length;
-  }
-
-  const pillClass = t.status;
-  const pillText = t.status==='waiting'?tt('statusWaiting') : t.status==='called'?tt('statusCalled')
-    : t.status==='in_progress'?tt('statusInProgress') : t.status==='resolved'?tt('statusResolved') : tt('statusCancelled');
-
+async function handlePing() {
+  if (!state.ticketSnapshot) return;
+  const t = state.ticketSnapshot;
   const now = Date.now();
-  const canPing = ['waiting','in_progress'].includes(t.status);
-  const sinceLastPing = t.lastPingAt ? now - t.lastPingAt : Infinity;
-  const onCooldown = sinceLastPing < PING_COOLDOWN_MS;
+  if (t.lastPingAt && (now - t.lastPingAt < PING_COOLDOWN_MS)) return;
+  
+  t.lastPingAt = now;
+  t.pingCount = (t.pingCount || 0) + 1;
+  await saveTicket(t);
+  toast(tt('pingSent'));
+  render();
+}
 
-  document.getElementById('app').innerHTML = `
-    ${topbarHtml()}
-    <main>
+async function updateStatus(id, newStatus) {
+  const t = await getTicket(id);
+  if (!t) return;
+  t.status = newStatus;
+  if (newStatus === 'called') t.calledAt = Date.now();
+  await saveTicket(t);
+  if (newStatus === 'called') toast(tt('toastCalled'));
+  render();
+}
+
+async function sendAdminMessage(id, msg) {
+  if (!msg.trim()) return;
+  const t = await getTicket(id);
+  if (!t) return;
+  t.message = msg;
+  t.messageAt = Date.now();
+  await saveTicket(t);
+  state.adminMsgOpen = null;
+  toast(tt('toastMsgSent'));
+  render();
+}
+
+/* RENDERING */
+function renderTopbar() {
+  return `
+    <header class="topbar">
+      <div class="brand"><div class="dot"></div>${tt('appTitle')}</div>
+      <div class="topbar-controls">
+        <select class="control" onchange="state.lang=this.value; render();">
+          ${['en','ur','hi','ne','am'].map(l => `<option value="${l}" ${state.lang===l?'selected':''}>${l.toUpperCase()}</option>`).join('')}
+        </select>
+        <button class="iconbtn" onclick="state.theme=state.theme==='light'?'dark':'light'; document.documentElement.setAttribute('data-theme',state.theme);">
+          ${state.theme==='light'?'🌙':'☀️'}
+        </button>
+      </div>
+    </header>
+  `;
+}
+
+async function renderApp() {
+  const root = document.getElementById('app');
+  let bodyContent = '';
+
+  if (state.route === 'form') {
+    bodyContent = `
+      <div class="card">
+        <h1>${tt('appTitle')}</h1>
+        <div class="sub">${tt('appSubtitle')}</div>
+        ${state.formError ? `<div class="notice warn">${state.formError}</div>` : ''}
+        ${state.duplicateInfo ? `
+          <div class="notice warn">
+            <strong>${tt('formDuplicateTitle')}</strong><br>
+            ${fmt(tt('formDuplicateBody'), {number: state.duplicateInfo.ticketNumber})}
+          </div>
+        ` : ''}
+        <form onsubmit="submitForm(event)">
+          <div class="field"><label>${tt('formNameLabel')}</label><input type="text" value="${escapeHtml(state.formState.name)}" oninput="state.formState.name=this.value" placeholder="${tt('formNamePlaceholder')}"></div>
+          <div class="field"><label>${tt('formEmployeeIdLabel')}</label><input type="text" value="${escapeHtml(state.formState.employeeId)}" oninput="state.formState.employeeId=this.value" placeholder="${tt('formEmployeeIdPlaceholder')}"></div>
+          <div class="field"><label>${tt('formTeamLabel')}</label>
+            <select onchange="state.formState.team=this.value">
+              <option value="">${tt('formTeamPlaceholder')}</option>
+              ${TEAMS.map(tm => `<option value="${tm}" ${state.formState.team===tm?'selected':''}>${tm}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>${tt('formBranchLabel')}</label>
+            <select onchange="state.formState.branch=this.value">
+              <option value="">${tt('formBranchPlaceholder')}</option>
+              ${BRANCHES.map(b => `<option value="${b}" ${state.formState.branch===b?'selected':''}>${b}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>${tt('formProblemLabel')}</label>
+            <select onchange="state.formState.problem=this.value">
+              <option value="">${tt('formProblemPlaceholder')}</option>
+              ${PROBLEMS.map(p => `<option value="${p}" ${state.formState.problem===p?'selected':''}>${tp(p)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="field"><label>${tt('formDescribeLabel')}</label><textarea oninput="state.formState.description=this.value" placeholder="${tt('formDescribePlaceholder')}">${escapeHtml(state.formState.description)}</textarea></div>
+          <button type="submit" class="btn-primary">${tt('formSubmit')}</button>
+        </form>
+        <div class="link-row"><a onclick="state.route='adminLogin'; render();">${tt('adminStaffLink')}</a></div>
+      </div>
+    `;
+  } else if (state.route === 'status') {
+    const ticket = await getTicket(state.myTicketId);
+    state.ticketSnapshot = ticket;
+
+    if (!ticket) {
+      state.route = 'form';
+      render();
+      return;
+    }
+
+    if (ticket.status === 'called' && state.prevStatus !== 'called') {
+      playChime();
+    }
+    state.prevStatus = ticket.status;
+
+    const all = await listTickets();
+    const waitingList = all.filter(t => t.status === 'waiting');
+    const myPos = waitingList.findIndex(t => t.id === ticket.id);
+    const ahead = myPos >= 0 ? myPos : 0;
+
+    const now = Date.now();
+    const canPing = !ticket.lastPingAt || (now - ticket.lastPingAt >= PING_COOLDOWN_MS);
+    const cdMs = canPing ? 0 : PING_COOLDOWN_MS - (now - ticket.lastPingAt);
+
+    bodyContent = `
       <div class="card status-center">
-        ${t.status==='called' ? `<div class="called-banner">🔔 ${escapeHtml(tt('statusCalledBanner'))}</div>` : ''}
+        <div class="status-pill ${ticket.status}">
+          <div class="blip"></div> ${tt('status' + ticket.status.charAt(0).toUpperCase() + ticket.status.slice(1))}
+        </div>
+        
+        <div class="board-wrap">
+          <div class="board">
+            ${ticket.ticketNumber.split('').map(c => `<div class="tile ${c==='-'?'dash':''}">${c}</div>`).join('')}
+          </div>
+        </div>
+        <div class="queue-label">${tt('statusNumberLabel')}</div>
 
-        ${boardHtml(t.ticketNumber, false)}
-        <div class="queue-label" style="margin-top:-14px; margin-bottom:20px;">${escapeHtml(tt('statusNumberLabel'))}</div>
+        ${ticket.status === 'called' ? `<div class="called-banner">${tt('statusCalledBanner')}</div>` : ''}
 
-        <div class="status-pill ${pillClass}"><span class="blip"></span>${escapeHtml(pillText)}</div>
-
-        ${t.status==='waiting' ? `
-          <div class="queue-num">${queuePos}</div>
-          <div class="queue-label">${escapeHtml(tt('statusQueue'))}</div>
+        ${ticket.message ? `
+          <div class="message-card">
+            <div class="m-title">${tt('statusMessageTitle')}</div>
+            <div class="m-body">${escapeHtml(ticket.message)}</div>
+          </div>
         ` : ''}
 
-        ${t.message ? `
-        <div class="message-card">
-          <div class="m-title">${escapeHtml(tt('statusMessageTitle'))}</div>
-          <div class="m-body">${escapeHtml(t.message)}</div>
-        </div>` : ''}
-
-        ${['resolved','cancelled'].includes(t.status) ? `
-          <button class="btn-primary" data-action="new-ticket">${escapeHtml(tt('newTicketButton'))}</button>
-        ` : `
-          <button class="ping-btn" id="ping-btn" ${(!canPing || onCooldown) ? 'disabled' : ''}>
-            ${onCooldown ? escapeHtml(fmt(tt('pingCooldown'),{time: countdown(PING_COOLDOWN_MS - sinceLastPing)})) : '🚨 '+escapeHtml(tt('pingButton'))}
+        ${ticket.status === 'waiting' ? `
+          <div class="queue-num">${ahead}</div>
+          <div class="queue-label">${tt('statusQueue')}</div>
+          <button class="ping-btn" ${!canPing?'disabled':''} onclick="handlePing()">
+            ${canPing ? tt('pingButton') : fmt(tt('pingCooldown'), {time: countdown(cdMs)})}
           </button>
-        `}
+        ` : ''}
 
-        <div class="link-row"><a data-action="show-admin-login">${escapeHtml(tt('adminStaffLink'))}</a></div>
+        <div style="margin-top: 24px;">
+          <button class="control" onclick="state.route='form'; render();">${tt('newTicketButton')}</button>
+        </div>
       </div>
-    </main>
-  `;
-
-  const pingBtn = document.getElementById('ping-btn');
-  if(pingBtn){
-    pingBtn.addEventListener('click', async ()=>{
-      unlockAudio();
-      const fresh = await getTicket(state.myTicketId);
-      if(!fresh) return;
-      fresh.lastPingAt = Date.now();
-      fresh.pingCount = (fresh.pingCount||0)+1;
-      await saveTicket(fresh);
-      toast(tt('pingSent'));
-      renderStatus();
-    });
-  }
-
-  if(state.prevStatus !== t.status){
-    if(t.status==='called'){
-      playCalledSound();
-      vibrateCalled();
-    }
-    state.prevStatus = t.status;
-  }
-}
-
-/* RENDER: ADMIN LOGIN */
-function renderAdminLogin(){
-  document.getElementById('app').innerHTML = `
-    ${topbarHtml()}
-    <main>
+    `;
+  } else if (state.route === 'adminLogin') {
+    bodyContent = `
       <div class="card">
-        <h1>${escapeHtml(tt('adminLoginTitle'))}</h1>
-        <p class="sub">${escapeHtml(tt('adminLoginSub'))}</p>
-        ${state.formError==='passcode' ? `<div class="notice warn">${escapeHtml(tt('adminWrongPasscode'))}</div>` : ''}
-        <form id="admin-login-form">
-          <div class="field">
-            <label>${escapeHtml(tt('adminPasscodeLabel'))}</label>
-            <input type="password" id="a-pass" placeholder="${escapeHtml(tt('adminPasscodePlaceholder'))}">
-          </div>
-          <button type="submit" class="btn-primary">${escapeHtml(tt('adminLoginButton'))}</button>
+        <h1>${tt('adminLoginTitle')}</h1>
+        <div class="sub">${tt('adminLoginSub')}</div>
+        <form onsubmit="
+          event.preventDefault();
+          if(this.passcode.value === ADMIN_PASSCODE){ state.isAdmin=true; state.route='adminDash'; }
+          else { toast(tt('adminWrongPasscode')); }
+          render();
+        ">
+          <div class="field"><label>${tt('adminPasscodeLabel')}</label><input type="password" name="passcode" placeholder="${tt('adminPasscodePlaceholder')}"></div>
+          <button class="btn-primary" type="submit">${tt('adminLoginButton')}</button>
         </form>
+        <div class="link-row"><a onclick="state.route='form'; render();">${tt('backToForm')}</a></div>
       </div>
-    </main>
-  `;
-  document.getElementById('admin-login-form').addEventListener('submit', async e=>{
-    e.preventDefault();
-    const val = document.getElementById('a-pass').value;
-    if(val === ADMIN_PASSCODE){
-      state.isAdmin = true; state.formError=null;
-      await setRoute('admin');
-      renderAdmin();
-    }else{
-      state.formError='passcode';
-      renderAdminLogin();
-    }
-  });
-}
+    `;
+  } else if (state.route === 'adminDash') {
+    if (!state.isAdmin) { state.route = 'adminLogin'; render(); return; }
+    const all = await listTickets();
 
-/* RENDER: ADMIN DASHBOARD */
-async function renderAdmin(){
-  if(!state.isAdmin){
-    await setRoute('admin-login');
-    renderAdminLogin();
-    return;
-  }
-  let all = await listTickets();
+    const filtered = all.filter(t => {
+      if (state.adminBranch !== 'all' && t.branch !== state.adminBranch) return false;
+      if (state.adminSearch) {
+        const q = state.adminSearch.toLowerCase();
+        return t.name.toLowerCase().includes(q) || t.employeeId.toLowerCase().includes(q) || t.ticketNumber.toLowerCase().includes(q);
+      }
+      return true;
+    });
 
-  if(state.adminBranch !== 'all') all = all.filter(t=>t.branch===state.adminBranch);
-  if(state.adminSearch.trim()){
-    const q = state.adminSearch.trim().toLowerCase();
-    all = all.filter(t => t.name.toLowerCase().includes(q) || t.employeeId.includes(q) || t.ticketNumber.toLowerCase().includes(q));
-  }
+    const lanes = {
+      waiting: filtered.filter(t => t.status === 'waiting'),
+      called: filtered.filter(t => t.status === 'called'),
+      in_progress: filtered.filter(t => t.status === 'in_progress'),
+      history: filtered.filter(t => ['resolved','cancelled'].includes(t.status))
+    };
 
-  const waiting = all.filter(t=>t.status==='waiting');
-  const called = all.filter(t=>t.status==='called');
-  const inProgress = all.filter(t=>t.status==='in_progress');
-  const history = all.filter(t=>['resolved','cancelled'].includes(t.status)).sort((a,b)=>b.submittedAt-a.submittedAt);
-
-  const branchOpts = `<option value="all">${escapeHtml(tt('adminAllBranches'))}</option>` +
-    BRANCHES.map(b=>`<option value="${b}" ${state.adminBranch===b?'selected':''}>${b} Branch</option>`).join('');
-
-  function cardHtml(t, laneType){
-    const pinged = t.lastPingAt ? `<div class="tcard-pinged">🔔 ${escapeHtml(fmt(tt('adminPinged'),{time:timeAgo(t.lastPingAt)}))}</div>` : '';
-    const selectBox = laneType==='waiting' ? `<input type="checkbox" class="tcard-select" data-select="${t.id}" ${state.adminSelected.has(t.id)?'checked':''}>` : '';
-    let actions = '';
-    if(laneType==='waiting'){
-      actions = `<button data-act="call" data-id="${t.id}">${escapeHtml(tt('adminCall'))}</button>
-                 <button data-act="msg" data-id="${t.id}">${escapeHtml(tt('adminMessage'))}</button>
-                 <button class="danger" data-act="cancel" data-id="${t.id}">${escapeHtml(tt('adminCancel'))}</button>`;
-    }else if(laneType==='called'){
-      actions = `<button data-act="progress" data-id="${t.id}">${escapeHtml(tt('adminStart'))}</button>
-                 <button data-act="resolve" data-id="${t.id}">${escapeHtml(tt('adminResolve'))}</button>
-                 <button data-act="msg" data-id="${t.id}">${escapeHtml(tt('adminMessage'))}</button>
-                 <button class="danger" data-act="cancel" data-id="${t.id}">${escapeHtml(tt('adminCancel'))}</button>`;
-    }else{
-      actions = `<button data-act="resolve" data-id="${t.id}">${escapeHtml(tt('adminResolve'))}</button>
-                 <button data-act="msg" data-id="${t.id}">${escapeHtml(tt('adminMessage'))}</button>
-                 <button class="danger" data-act="cancel" data-id="${t.id}">${escapeHtml(tt('adminCancel'))}</button>`;
-    }
-    const problemLabel = t.problem==='Others' ? (t.description ? t.description : tp('Others')) : tp(t.problem);
-    const msgOpen = state.adminMsgOpen === t.id;
-    return `
+    const renderCard = (t) => `
       <div class="tcard">
         <div class="tcard-top">
           <div>
-            ${selectBox}
-            <span class="tcard-num">${escapeHtml(t.ticketNumber)}</span>
-            <div class="tcard-name">${escapeHtml(t.name)}</div>
+            <div class="tcard-num">${t.ticketNumber}</div>
+            <div class="tcard-name">${escapeHtml(t.name)} (${t.employeeId})</div>
           </div>
+          <span class="tcard-problem">${tp(t.problem)}</span>
         </div>
-        <div class="tcard-meta">ID ${escapeHtml(t.employeeId)} · Team ${escapeHtml(t.team)} · ${escapeHtml(t.branch)} Branch</div>
-        <div class="tcard-problem">${escapeHtml(problemLabel)}</div>
-        ${pinged}
-        <div class="tcard-actions">${actions}</div>
-        <div class="msg-box ${msgOpen?'open':''}" data-msgbox="${t.id}">
-          <textarea placeholder="${escapeHtml(tt('adminMessagePlaceholder'))}" data-msginput="${t.id}">${t.message?escapeHtml(t.message):''}</textarea>
-          <button data-act="sendmsg" data-id="${t.id}">${escapeHtml(tt('adminSend'))}</button>
+        <div class="tcard-meta">${t.branch} • ${t.team} • ${timeAgo(t.submittedAt)} ago</div>
+        ${t.description ? `<div class="tcard-meta" style="margin-top:6px; color:var(--ink);">${escapeHtml(t.description)}</div>` : ''}
+        ${t.lastPingAt ? `<div class="tcard-pinged">⚠️ ${fmt(tt('adminPinged'), {time: timeAgo(t.lastPingAt)})} (${t.pingCount}x)</div>` : ''}
+        
+        <div class="tcard-actions">
+          ${t.status === 'waiting' ? `<button onclick="updateStatus('${t.id}','called')">${tt('adminCall')}</button>` : ''}
+          ${t.status === 'called' ? `<button onclick="updateStatus('${t.id}','in_progress')">${tt('adminStart')}</button>` : ''}
+          ${['waiting','called','in_progress'].includes(t.status) ? `
+            <button onclick="state.adminMsgOpen = state.adminMsgOpen === '${t.id}' ? null : '${t.id}'; render();">${tt('adminMessage')}</button>
+            <button onclick="updateStatus('${t.id}','resolved')">${tt('adminResolve')}</button>
+            <button class="danger" onclick="updateStatus('${t.id}','cancelled')">${tt('adminCancel')}</button>
+          ` : ''}
         </div>
-      </div>`;
-  }
 
-  function laneHtml(title, cls, list, laneType){
-    const showCallSelected = laneType==='waiting';
-    const selCount = laneType==='waiting' ? list.filter(t=>state.adminSelected.has(t.id)).length : 0;
-    return `
-    <div class="lane ${cls}">
-      <div class="lane-head">
-        <div class="lane-title"><span class="swatch"></span>${escapeHtml(title)}</div>
-        <div style="display:flex; align-items:center; gap:8px;">
-          <span class="lane-count">${list.length}</span>
-          ${showCallSelected ? `<button class="call-selected-btn" id="call-selected-btn" ${selCount===0?'disabled':''}>${escapeHtml(tt('adminCallSelected'))} (${selCount})</button>` : ''}
+        <div class="msg-box ${state.adminMsgOpen === t.id ? 'open' : ''}">
+          <textarea id="msg-${t.id}" placeholder="${tt('adminMessagePlaceholder')}">${t.message || ''}</textarea>
+          <button class="control" onclick="sendAdminMessage('${t.id}', document.getElementById('msg-${t.id}').value)">${tt('adminSend')}</button>
         </div>
       </div>
-      ${list.length ? list.map(t=>cardHtml(t,laneType)).join('') : `<div class="empty-note">${escapeHtml(tt('adminNoTickets'))}</div>`}
-    </div>`;
-  }
+    `;
 
-  document.getElementById('app').innerHTML = `
-    ${topbarHtml()}
-    <main>
+    bodyContent = `
       <div class="admin-shell">
         <div class="admin-top">
-          <h1>${escapeHtml(tt('adminDashTitle'))}</h1>
+          <h1>${tt('adminDashTitle')}</h1>
           <div class="admin-filters">
-            <input type="text" id="admin-search" placeholder="${escapeHtml(tt('adminSearchPlaceholder'))}" value="${escapeHtml(state.adminSearch)}">
-            <select class="control" id="admin-branch-filter">${branchOpts}</select>
-            <button class="control" id="admin-logout">${escapeHtml(tt('adminLogout'))}</button>
+            <input type="text" placeholder="${tt('adminSearchPlaceholder')}" value="${escapeHtml(state.adminSearch)}" oninput="state.adminSearch=this.value; render();">
+            <select class="control" onchange="state.adminBranch=this.value; render();">
+              <option value="all">${tt('adminAllBranches')}</option>
+              ${BRANCHES.map(b => `<option value="${b}" ${state.adminBranch===b?'selected':''}>${b}</option>`).join('')}
+            </select>
+            <button class="control" onclick="state.isAdmin=false; state.route='form'; render();">${tt('adminLogout')}</button>
           </div>
         </div>
+
         <div class="lanes">
-          ${laneHtml(tt('laneWaiting'),'waiting',waiting,'waiting')}
-          ${laneHtml(tt('laneCalled'),'called',called,'called')}
-          ${laneHtml(tt('laneInProgress'),'in_progress',inProgress,'in_progress')}
+          ${['waiting','called','in_progress'].map(laneKey => `
+            <div class="lane ${laneKey}">
+              <div class="lane-head">
+                <div class="lane-title"><div class="swatch"></div>${tt('lane' + laneKey.charAt(0).toUpperCase() + laneKey.slice(1))}</div>
+                <div class="lane-count">${lanes[laneKey].length}</div>
+              </div>
+              ${lanes[laneKey].length === 0 ? `<div class="empty-note">${tt('adminNoTickets')}</div>` : lanes[laneKey].map(renderCard).join('')}
+            </div>
+          `).join('')}
         </div>
-        <div class="history-toggle" id="history-toggle">${escapeHtml(state.historyOpen ? tt('adminHideHistory') : tt('adminHistory'))}</div>
-        <div class="history-list ${state.historyOpen?'open':''}">
-          ${history.length ? history.map(t=>`
+
+        <div class="history-toggle" onclick="state.historyOpen=!state.historyOpen; render();">
+          ${state.historyOpen ? tt('adminHideHistory') : tt('adminHistory')} (${lanes.history.length})
+        </div>
+
+        <div class="history-list ${state.historyOpen ? 'open' : ''}">
+          ${lanes.history.map(t => `
             <div class="history-row">
-              <span style="font-family:var(--font-mono); font-weight:700;">${escapeHtml(t.ticketNumber)}</span>
-              <span>${escapeHtml(t.name)}</span>
-              <span style="color:var(--ink-faint);">${escapeHtml(t.branch)}</span>
-              <span style="font-weight:700;">${t.status==='resolved'?escapeHtml(tt('statusResolved')):escapeHtml(tt('statusCancelled'))}</span>
-            </div>`).join('') : `<div class="empty-note">${escapeHtml(tt('adminNoTickets'))}</div>`}
+              <div><strong>${t.ticketNumber}</strong> - ${escapeHtml(t.name)} (${t.branch})</div>
+              <div><span class="status-pill ${t.status}">${t.status}</span></div>
+            </div>
+          `).join('')}
         </div>
       </div>
-    </main>
-  `;
-  bindAdmin();
+    `;
+  }
+
+  root.innerHTML = renderTopbar() + `<main>${bodyContent}</main>`;
 }
 
-function bindAdmin(){
-  const $ = id=>document.getElementById(id);
-  $('admin-logout').addEventListener('click', async ()=>{
-    state.isAdmin=false;
-    await setRoute('form');
-    renderCurrentRoute();
-  });
-  $('admin-search').addEventListener('input', e=>{
-    state.adminSearch = e.target.value; renderAdmin();
-  });
-  $('admin-branch-filter').addEventListener('change', e=>{
-    state.adminBranch = e.target.value; renderAdmin();
-  });
-  $('history-toggle').addEventListener('click', ()=>{
-    state.historyOpen = !state.historyOpen; renderAdmin();
-  });
-  const callSelBtn = $('call-selected-btn');
-  if(callSelBtn){
-    callSelBtn.addEventListener('click', async ()=>{
-      const ids = Array.from(state.adminSelected);
-      for(const id of ids){
-        const t = await getTicket(id);
-        if(t && t.status==='waiting'){ t.status='called'; t.calledAt=Date.now(); await saveTicket(t); }
-      }
-      state.adminSelected.clear();
-      toast(tt('toastCalled'));
-      renderAdmin();
-    });
-  }
-  document.querySelectorAll('[data-select]').forEach(box=>{
-    box.addEventListener('change', e=>{
-      const id = e.target.getAttribute('data-select');
-      if(e.target.checked) state.adminSelected.add(id); else state.adminSelected.delete(id);
-      renderAdmin();
-    });
-  });
-  document.querySelectorAll('[data-act]').forEach(btn=>{
-    btn.addEventListener('click', async e=>{
-      const act = e.target.getAttribute('data-act');
-      const id = e.target.getAttribute('data-id');
-      if(act==='call'){
-        const t = await getTicket(id); if(t){ t.status='called'; t.calledAt=Date.now(); await saveTicket(t); toast(tt('toastCalled')); }
-        renderAdmin();
-      }else if(act==='progress'){
-        const t = await getTicket(id); if(t){ t.status='in_progress'; await saveTicket(t); }
-        renderAdmin();
-      }else if(act==='resolve'){
-        const t = await getTicket(id); if(t){ t.status='resolved'; await saveTicket(t); }
-        renderAdmin();
-      }else if(act==='cancel'){
-        const t = await getTicket(id); if(t){ t.status='cancelled'; await saveTicket(t); }
-        renderAdmin();
-      }else if(act==='msg'){
-        state.adminMsgOpen = state.adminMsgOpen===id ? null : id;
-        renderAdmin();
-      }else if(act==='sendmsg'){
-        const box = document.querySelector('[data-msginput="'+id+'"]');
-        const val = box ? box.value.trim() : '';
-        const t = await getTicket(id);
-        if(t){ t.message = val; t.messageAt = Date.now(); await saveTicket(t); }
-        state.adminMsgOpen = null;
-        toast(tt('toastMsgSent'));
-        renderAdmin();
-      }
-    });
-  });
+function render() {
+  renderApp();
 }
 
-/* ROUTING / GLOBAL EVENTS */
-function renderCurrentRoute(){
-  if(state.route==='form') renderForm();
-  else if(state.route==='status') renderStatus();
-  else if(state.route==='admin-login') renderAdminLogin();
-  else if(state.route==='admin') renderAdmin();
-}
-
-document.addEventListener('click', e=>{
-  const goForm = e.target.closest('[data-action="go-form"]');
-  const showLogin = e.target.closest('[data-action="show-admin-login"]');
-  const newTicket = e.target.closest('[data-action="new-ticket"]');
-  
-  if(goForm){
-    setRoute('form').then(()=> renderForm());
-  }
-  if(showLogin){
-    setRoute('admin-login').then(()=> renderAdminLogin());
-  }
-  if(newTicket){
-    (async ()=>{
-      state.myTicketId = null; state.prevStatus = undefined;
-      try { localStorage.setItem('my-ticket-id', ''); } catch(err) {}
-      await setRoute('form');
-      state.duplicateInfo=null; state.formError=null;
-      renderForm();
-    })();
-  }
-});
-
-document.addEventListener('change', e=>{
-  if(e.target.id === 'lang-select'){
-    state.lang = e.target.value;
-    try { localStorage.setItem('lang', state.lang); } catch(err) {}
-    renderCurrentRoute();
-  }
-});
-
-document.addEventListener('click', e=>{
-  if(e.target.id === 'theme-toggle'){
-    state.theme = state.theme==='light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', state.theme);
-    try { localStorage.setItem('theme', state.theme); } catch(err) {}
-    renderCurrentRoute();
-  }
-}, true);
-
-document.addEventListener('click', unlockAudio, {once:true});
-
-/* REALTIME MULTI-DEVICE SYNC */
-supabase
-  .channel('public:tickets')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
-    if (state.route === 'admin') renderAdmin();
-    if (state.route === 'status') renderStatus();
-  })
-  .subscribe();
-
-/* TICK LOOP FOR COUNTDOWNS */
-setInterval(()=>{
-  const pingBtn = document.getElementById('ping-btn');
-  if(pingBtn && state.ticketSnapshot && state.ticketSnapshot.lastPingAt){
-    const remain = PING_COOLDOWN_MS - (Date.now()-state.ticketSnapshot.lastPingAt);
-    if(remain > 0 && pingBtn.disabled){
-      pingBtn.textContent = fmt(tt('pingCooldown'),{time:countdown(remain)});
-    }else if(remain<=0 && pingBtn.disabled){
-      renderStatus();
-    }
+/* AUTOMATIC REFRESH LOOP FOR LIVE QUEUE UPDATES */
+setInterval(() => {
+  if (state.route === 'status' || state.route === 'adminDash') {
+    render();
   }
 }, TICK_MS);
 
-/* INIT */
-(async function init(){
-  try {
-    const savedLang = localStorage.getItem('lang');
-    if(savedLang) state.lang = savedLang;
-    
-    const savedTheme = localStorage.getItem('theme');
-    if(savedTheme){
-      state.theme = savedTheme;
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    }
-
-    const savedRoute = localStorage.getItem('current_route');
-    const savedTicketId = localStorage.getItem('my-ticket-id');
-
-    if(savedTicketId){
-      state.myTicketId = savedTicketId;
-      const t = await getTicket(savedTicketId);
-      if(t) state.prevStatus = t.status;
-    }
-
-    if(savedRoute){
-      state.route = savedRoute;
-    } else if(savedTicketId){
-      state.route = 'status';
-    }
-  } catch(err) {}
-
-  renderCurrentRoute();
-})();
+// Initial Load
+render();
 </script>
-</body>
-</html>
