@@ -329,7 +329,7 @@ langLabel:"Language",themeLight:"Light",themeDark:"Dark",
 adminLoginTitle:"IT Staff Login",adminLoginSub:"For IT team members only",
 adminPasscodeLabel:"Passcode",adminPasscodePlaceholder:"Enter passcode",
 adminLoginButton:"Log In",adminWrongPasscode:"Incorrect passcode",
-adminStaffLink:"IT staff login",backToTicket:"Back to my ticket",backToForm:"←  Back to Form",
+adminStaffLink:"IT staff login",backToTicket:"Back to my ticket",backToForm:"← Back to Form",
 adminDashTitle:"Ticket Queue",adminLogout:"Log out",
 adminSearchPlaceholder:"Search name, ID or ticket #",adminAllBranches:"All branches",
 adminCallSelected:"Call selected",adminCall:"Call",adminStart:"Start work",
@@ -522,30 +522,38 @@ function countdown(ms){
   return m+':'+pad2(r);
 }
 
-/* STORAGE HELPERS */
+/* ROBUST STORAGE HELPERS (Fix for GitHub Pages) */
 async function sGet(key, shared){
   try{
-    if(window.storage && typeof window.storage.get === 'function'){
+    if(typeof window !== 'undefined' && window.storage && typeof window.storage.get === 'function'){
       const r = await window.storage.get(key, !!shared);
       return r ? r.value : null;
     }
+  } catch(e){}
+  try {
     return localStorage.getItem((shared?'shared_':'local_')+key);
-  } catch(e){ return null; }
+  } catch(e) { return null; }
 }
+
 async function sSet(key, value, shared){
   try{
-    if(window.storage && typeof window.storage.set === 'function'){
+    if(typeof window !== 'undefined' && window.storage && typeof window.storage.set === 'function'){
       return await window.storage.set(key, value, !!shared);
     }
+  } catch(e){}
+  try {
     localStorage.setItem((shared?'shared_':'local_')+key, value);
-  } catch(e){ return null; }
+  } catch(e){}
 }
+
 async function sList(prefix, shared){
   try{
-    if(window.storage && typeof window.storage.list === 'function'){
+    if(typeof window !== 'undefined' && window.storage && typeof window.storage.list === 'function'){
       const r = await window.storage.list(prefix, !!shared);
       return r ? r.keys : [];
     }
+  } catch(e){}
+  try {
     const keys = [];
     const pfx = (shared?'shared_':'local_')+prefix;
     for(let i=0; i<localStorage.length; i++){
@@ -1149,28 +1157,32 @@ setInterval(()=>{
 
 /* INIT */
 (async function init(){
-  const savedLang = await sGet('lang', false);
-  if(savedLang) state.lang = savedLang;
-  
-  const savedTheme = await sGet('theme', false);
-  if(savedTheme){
-    state.theme = savedTheme;
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  }
+  try {
+    const savedLang = await sGet('lang', false);
+    if(savedLang) state.lang = savedLang;
+    
+    const savedTheme = await sGet('theme', false);
+    if(savedTheme){
+      state.theme = savedTheme;
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
 
-  const savedRoute = await sGet('current_route', false);
-  const savedTicketId = await sGet('my-ticket-id', false);
+    const savedRoute = await sGet('current_route', false);
+    const savedTicketId = await sGet('my-ticket-id', false);
 
-  if(savedTicketId){
-    state.myTicketId = savedTicketId;
-    const t = await getTicket(savedTicketId);
-    if(t) state.prevStatus = t.status;
-  }
+    if(savedTicketId){
+      state.myTicketId = savedTicketId;
+      const t = await getTicket(savedTicketId);
+      if(t) state.prevStatus = t.status;
+    }
 
-  if(savedRoute){
-    state.route = savedRoute;
-  } else if(savedTicketId){
-    state.route = 'status';
+    if(savedRoute){
+      state.route = savedRoute;
+    } else if(savedTicketId){
+      state.route = 'status';
+    }
+  } catch(err) {
+    console.warn("Storage init warning:", err);
   }
 
   renderCurrentRoute();
