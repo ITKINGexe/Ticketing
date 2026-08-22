@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>IT Help Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1F6; --surface:#FFFFFF; --surface-2:#F6F8FB;
+    --ink:#10141C; --ink-soft:#525C70; --ink-faint:#8993A6;
+    --line:rgba(16,20,28,0.10);
+    --accent:#FFB020; --accent-ink:#7A4B00; --accent-soft:#FFF3DC;
+    --go:#1FB874; --go-soft:#E4F8EE;
+    --progress:#3E7BFA; --progress-soft:#E8EFFF;
+    --danger:#FF4757; --danger-soft:#FFE9EB;
+    --board-bg:#0B0E14; --board-amber:#FFB020;
+    --radius-lg:22px; --radius-md:14px; --radius-sm:10px;
+    --shadow-sm:0 2px 10px rgba(16,20,28,0.06);
+    --shadow-md:0 10px 30px rgba(16,20,28,0.10);
+    --font-display:'Manrope',-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  [data-theme="dark"]{
+    --paper:#0A0D13; --surface:#141924; --surface-2:#191F2C;
+    --ink:#EEF1F6; --ink-soft:#A6AFC2; --ink-faint:#6B7488;
+    --line:rgba(255,255,255,0.08);
+    --accent-soft:#2A2110; --go-soft:#0F2A1E; --progress-soft:#101E38; --danger-soft:#2E1418;
+    --shadow-sm:0 2px 10px rgba(0,0,0,0.35);
+    --shadow-md:0 12px 34px rgba(0,0,0,0.45);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:var(--font-display);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    transition:background .25s ease,color .25s ease;
+  }
+  #app{min-height:100vh; display:flex; flex-direction:column;}
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 20px; gap:12px; flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:17px; letter-spacing:-0.01em;}
+  .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent); box-shadow:0 0 0 4px var(--accent-soft);}
+  .topbar-controls{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  select.control, button.control{
+    font-family:var(--font-display); font-size:13px; font-weight:600;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink);
+    border-radius:999px; padding:8px 14px; cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  select.control:hover, button.control:hover{
+    transform:translateY(-1px); box-shadow:var(--shadow-sm); border-color:var(--accent);
+  }
+  button.iconbtn{
+    width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line); background:var(--surface); cursor:pointer; font-size:16px;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  button.iconbtn:hover{transform:translateY(-1px) rotate(-6deg); box-shadow:var(--shadow-sm);}
+
+  main{flex:1; display:flex; flex-direction:column; align-items:center; padding:10px 16px 60px;}
+
+  /* ---------- card ---------- */
+  .card{
+    width:100%; max-width:460px; background:var(--surface);
+    border:1px solid var(--line); border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-sm); padding:28px 24px; margin-top:8px;
+  }
+  .card h1{font-size:22px; margin:0 0 4px; letter-spacing:-0.02em;}
+  .card .sub{color:var(--ink-soft); font-size:14px; margin:0 0 22px; line-height:1.5;}
+
+  /* ---------- form fields ---------- */
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:13px; font-weight:700; margin-bottom:7px; color:var(--ink-soft);}
+  .field input, .field select, .field textarea{
+    width:100%; font-family:var(--font-display); font-size:15px; color:var(--ink);
+    background:var(--surface-2); border:1.5px solid var(--line); border-radius:var(--radius-sm);
+    padding:13px 14px; outline:none;
+    transition:border-color .15s ease, box-shadow .15s ease, transform .15s ease, background .15s ease;
+  }
+  .field textarea{resize:vertical; min-height:80px; font-family:var(--font-display);}
+  .field input:hover, .field select:hover, .field textarea:hover{
+    border-color:var(--accent); transform:translateY(-1px);
+    box-shadow:0 4px 14px rgba(255,176,32,0.18);
+    background:var(--surface);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    border-color:var(--progress); background:var(--surface);
+    box-shadow:0 0 0 4px var(--progress-soft);
+    transform:translateY(-1px);
+  }
+  .field.err input, .field.err select, .field.err textarea{border-color:var(--danger);}
+  .field .errtext{color:var(--danger); font-size:12px; margin-top:6px; font-weight:600; display:none;}
+  .field.err .errtext{display:block;}
+
+  .btn-primary{
+    width:100%; padding:15px 18px; border:none; border-radius:999px;
+    background:var(--ink); color:var(--paper); font-family:var(--font-display);
+    font-weight:800; font-size:15px; cursor:pointer; margin-top:6px;
+    transition:transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+  }
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:var(--shadow-md);}
+  .btn-primary:active{transform:translateY(0px);}
+  .btn-secondary{
+    width:100%; padding:13px 18px; border:1.5px solid var(--line); border-radius:999px;
+    background:transparent; color:var(--ink); font-family:var(--font-display);
+    font-weight:700; font-size:14px; cursor:pointer; margin-top:10px;
+    transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .btn-secondary:hover{transform:translateY(-1px); box-shadow:var(--shadow-sm); border-color:var(--accent);}
+
+  .notice{
+    border-radius:var(--radius-md); padding:14px 16px; font-size:13.5px; line-height:1.5;
+    margin-bottom:18px; border:1.5px solid; font-weight:600;
+  }
+  .notice.warn{background:var(--danger-soft); border-color:var(--danger); color:var(--danger);}
+  .notice.info{background:var(--progress-soft); border-color:var(--progress); color:var(--progress);}
+
+  /* ---------- split-flap ticket board ---------- */
+  .board-wrap{display:flex; justify-content:center; margin:6px 0 22px;}
+  .board{
+    display:flex; gap:4px; background:var(--board-bg); padding:12px 14px; border-radius:var(--radius-md);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,0.06), var(--shadow-md);
+  }
+  .board .tile{
+    position:relative; width:26px; height:38px; background:linear-gradient(180deg,#1b2130 0%,#11151e 100%);
+    border-radius:4px; display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-weight:700; font-size:19px; color:var(--board-amber);
+    text-shadow:0 0 8px rgba(255,176,32,0.5);
+    overflow:hidden;
+  }
+  .board .tile::after{content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(0,0,0,0.55);}
+  .board .tile.dash{background:transparent; color:var(--ink-faint); text-shadow:none; width:12px;}
+
+  /* ---------- status page ---------- */
+  .status-center{text-align:center;}
+  .status-pill{
+    display:inline-flex; align-items:center; gap:7px; padding:7px 16px; border-radius:999px;
+    font-weight:800; font-size:13px; margin-bottom:18px;
+  }
+  .status-pill.waiting{background:var(--accent-soft); color:var(--accent-ink);}
+  .status-pill.called{background:var(--go-soft); color:var(--go);}
+  .status-pill.in_progress{background:var(--progress-soft); color:var(--progress);}
+  .status-pill.resolved{background:var(--surface-2); color:var(--ink-soft);}
+  .status-pill.cancelled{background:var(--surface-2); color:var(--ink-soft);}
+  .status-pill .blip{width:7px;height:7px;border-radius:50%;background:currentColor;}
+
+  .queue-num{font-family:var(--font-mono); font-weight:700; font-size:56px; line-height:1; margin:4px 0 2px;}
+  .queue-label{color:var(--ink-soft); font-size:13.5px; font-weight:600; margin-bottom:22px;}
+
+  .called-banner{
+    background:var(--go); color:#06371F; border-radius:var(--radius-md); padding:16px; font-weight:800;
+    font-size:15px; margin-bottom:20px; animation:pulseGlow 1.6s ease-in-out infinite;
+  }
+  @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(31,184,116,0.45);}50%{box-shadow:0 0 0 10px rgba(31,184,116,0);}}
+
+  .message-card{
+    text-align:left; background:var(--progress-soft); border:1px solid rgba(62,123,250,0.25);
+    border-radius:var(--radius-md); padding:14px 16px; margin-bottom:18px;
+  }
+  .message-card .m-title{font-size:11.5px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--progress); margin-bottom:6px;}
+  .message-card .m-body{font-size:14.5px; line-height:1.5; color:var(--ink);}
+
+  .ping-btn{
+    width:100%; padding:14px 18px; border:1.5px solid var(--danger); border-radius:999px;
+    background:var(--danger-soft); color:var(--danger); font-weight:800; font-size:14.5px; cursor:pointer;
+    transition:transform .15s ease, box-shadow .15s ease, opacity .2s ease;
+  }
+  .ping-btn:hover:not(:disabled){transform:translateY(-2px); box-shadow:var(--shadow-md);}
+  .ping-btn:disabled{opacity:.5; cursor:not-allowed;}
+
+  /* ---------- admin ---------- */
+  .admin-shell{width:100%; max-width:1180px;}
+  .admin-top{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:18px;}
+  .admin-top h1{font-size:20px; margin:0;}
+  .admin-filters{display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  .admin-filters input[type="text"]{
+    padding:9px 14px; border-radius:999px; border:1.5px solid var(--line); background:var(--surface);
+    font-family:var(--font-display); font-size:13px; color:var(--ink); min-width:180px;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .admin-filters input[type="text"]:hover, .admin-filters input[type="text"]:focus{
+    border-color:var(--accent); outline:none; box-shadow:0 0 0 3px var(--accent-soft);
+  }
+
+  .lanes{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  @media (max-width:900px){.lanes{grid-template-columns:1fr;}}
+  .lane{background:var(--surface-2); border:1px solid var(--line); border-radius:var(--radius-lg); padding:14px; min-height:120px;}
+  .lane-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  .lane-title{display:flex; align-items:center; gap:8px; font-weight:800; font-size:13.5px;}
+  .lane-title .swatch{width:9px;height:9px;border-radius:50%;}
+  .lane.waiting .swatch{background:var(--accent);}
+  .lane.called .swatch{background:var(--go);}
+  .lane.in_progress .swatch{background:var(--progress);}
+  .lane-count{font-family:var(--font-mono); font-size:12px; color:var(--ink-faint); font-weight:700;}
+  .call-selected-btn{
+    font-size:12px; font-weight:800; padding:7px 12px; border-radius:999px; border:none;
+    background:var(--ink); color:var(--paper); cursor:pointer; transition:transform .15s ease;
+  }
+  .call-selected-btn:hover{transform:translateY(-1px);}
+  .call-selected-btn:disabled{opacity:.35; cursor:not-allowed;}
+
+  .tcard{
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-md);
+    padding:13px 14px; margin-bottom:10px; transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+  }
+  .tcard:hover{transform:translateY(-2px); box-shadow:var(--shadow-sm); border-color:var(--accent);}
+  .tcard-top{display:flex; align-items:flex-start; gap:8px; justify-content:space-between;}
+  .tcard-num{font-family:var(--font-mono); font-weight:700; font-size:13px; color:var(--ink);}
+  .tcard-name{font-weight:800; font-size:14.5px; margin-top:3px;}
+  .tcard-meta{color:var(--ink-soft); font-size:12px; margin-top:4px; line-height:1.5;}
+  .tcard-problem{
+    display:inline-block; margin-top:8px; font-size:11.5px; font-weight:700; padding:3px 9px;
+    border-radius:999px; background:var(--surface-2); color:var(--ink-soft);
+  }
+  .tcard-pinged{
+    margin-top:8px; font-size:11.5px; font-weight:800; color:var(--danger);
+    display:flex; align-items:center; gap:5px;
+  }
+  .tcard-actions{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;}
+  .tcard-actions button{
+    font-size:11.5px; font-weight:700; padding:7px 10px; border-radius:8px; border:1px solid var(--line);
+    background:var(--surface-2); color:var(--ink); cursor:pointer; transition:transform .15s ease, border-color .15s ease;
+  }
+  .tcard-actions button:hover{transform:translateY(-1px); border-color:var(--accent);}
+  .tcard-actions button.danger:hover{border-color:var(--danger); color:var(--danger);}
+  .tcard-select{margin-right:2px; margin-top:3px;}
+  .msg-box{margin-top:10px; display:none;}
+  .msg-box.open{display:block;}
+  .msg-box textarea{
+    width:100%; font-family:var(--font-display); font-size:13px; border:1.5px solid var(--line);
+    border-radius:8px; padding:8px 10px; min-height:56px; background:var(--surface-2); color:var(--ink);
+    transition:border-color .15s ease;
+  }
+  .msg-box textarea:hover, .msg-box textarea:focus{border-color:var(--progress); outline:none;}
+  .msg-box button{margin-top:6px;}
+
+  .history-toggle{
+    text-align:center; margin:22px 0 10px; font-size:13px; font-weight:700; color:var(--ink-soft);
+    cursor:pointer; text-decoration:underline; text-underline-offset:3px;
+  }
+  .history-list{display:none;}
+  .history-list.open{display:block;}
+  .history-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px;
+    background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-sm); margin-bottom:8px; font-size:12.5px;
+  }
+
+  .empty-note{color:var(--ink-faint); font-size:13px; text-align:center; padding:20px 0;}
+
+  /* ---------- toast ---------- */
+  #toast{
+    position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--ink); color:var(--paper); padding:12px 20px; border-radius:999px;
+    font-size:13.5px; font-weight:700; opacity:0; pointer-events:none; transition:all .25s ease;
+    box-shadow:var(--shadow-md); z-index:50; white-space:nowrap;
+  }
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .link-row{text-align:center; margin-top:16px;}
+  .link-row a{color:var(--ink-faint); font-size:12.5px; font-weight:600; cursor:pointer; text-decoration:underline; text-underline-offset:2px;}
+
+  ::selection{background:var(--accent); color:#10141C;}
+  :focus-visible{outline:2px solid var(--progress); outline-offset:2px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   CONFIG / DATA
+========================================================= */
+const TEAMS = ["Ankit","Asim","Bilal","Faisal","Majid","Martin","Obed","Sarina","Sheila","Wahab"];
+const BRANCHES = ["Ajman","Al Amiri","DIB","Excellence"];
+const BRANCH_CODES = {"Ajman":"AJM","Al Amiri":"AMR","DIB":"DIB","Excellence":"EXC"};
+const PROBLEMS = [
+  "Account ban","Account boosting","Account freeze","Getting issued a new phone",
+  "Need extra account","Others","Personal problems","Phone not charging","Phone's display not coming"
+];
+const ADMIN_PASSCODE = "ITDESK2026";
+const PING_COOLDOWN_MS = 15*60*1000;
+const SYNC_MS = 4000;
+const TICK_MS = 1000;
+
+/* =========================================================
+   TRANSLATIONS
+========================================================= */
+const T = {
+en:{appTitle:"IT Help Desk",appSubtitle:"Tell us what's wrong — we'll take it from here",
+formNameLabel:"Full Name",formNamePlaceholder:"e.g. Ahmed Khan",
+formEmployeeIdLabel:"Employee ID",formEmployeeIdPlaceholder:"e.g. 10234",
+formTeamLabel:"Your Team",formTeamPlaceholder:"Select your team",
+formBranchLabel:"Your Branch",formBranchPlaceholder:"Select your branch",
+formProblemLabel:"What's the problem?",formProblemPlaceholder:"Select an issue",
+formDescribeLabel:"Please describe your issue",formDescribePlaceholder:"Type here...",
+formSubmit:"Submit Ticket",formRequired:"Please fill in every field",
+formDuplicateTitle:"You already have an open ticket",
+formDuplicateBody:"Ticket {number} is still open. Please wait until it's resolved.",
+statusQueue:"People ahead of you",statusNumberLabel:"Ticket Number",
+statusWaiting:"Waiting",statusCalled:"You're being called!",statusInProgress:"In Progress",
+statusResolved:"Resolved",statusCancelled:"Cancelled",
+statusCalledBanner:"It's your turn! Please head to the IT desk.",
+statusMessageTitle:"Message from IT",
+pingButton:"Ping IT (urgent)",pingCooldown:"Next ping available in {time}",pingSent:"IT has been notified",
+newTicketButton:"Submit a new ticket",
+langLabel:"Language",themeLight:"Light",themeDark:"Dark",
+adminLoginTitle:"IT Staff Login",adminLoginSub:"For IT team members only",
+adminPasscodeLabel:"Passcode",adminPasscodePlaceholder:"Enter passcode",
+adminLoginButton:"Log In",adminWrongPasscode:"Incorrect passcode",
+adminStaffLink:"IT staff login",backToTicket:"Back to my ticket",
+adminDashTitle:"Ticket Queue",adminLogout:"Log out",
+adminSearchPlaceholder:"Search name, ID or ticket #",adminAllBranches:"All branches",
+adminCallSelected:"Call selected",adminCall:"Call",adminStart:"Start work",
+adminMessage:"Message",adminSend:"Send",adminMessagePlaceholder:"Write a message for this person...",
+adminResolve:"Resolve",adminCancel:"Cancel",adminNoTickets:"Nothing here right now",
+adminPinged:"Pinged {time} ago",adminHistory:"Show resolved & cancelled tickets",
+adminHideHistory:"Hide resolved & cancelled tickets",toastMsgSent:"Message sent",toastCalled:"Ticket called",
+laneWaiting:"Waiting",laneCalled:"Called",laneInProgress:"In Progress"},
+
+ur:{appTitle:"IT Madad Desk",appSubtitle:"Hamein bataen kya masla hai — hum sambhal lenge",
+formNameLabel:"Pura Naam",formNamePlaceholder:"misaal: Ahmed Khan",
+formEmployeeIdLabel:"Employee ID",formEmployeeIdPlaceholder:"misaal: 10234",
+formTeamLabel:"Aap ki Team",formTeamPlaceholder:"Apni team chunein",
+formBranchLabel:"Aap ki Branch",formBranchPlaceholder:"Apni branch chunein",
+formProblemLabel:"Masla kya hai?",formProblemPlaceholder:"Masla chunein",
+formDescribeLabel:"Meherbani karke apna masla likhein",formDescribePlaceholder:"Yahan likhein...",
+formSubmit:"Ticket Jama Karein",formRequired:"Meherbani karke tamam khaanay bharein",
+formDuplicateTitle:"Aap ka pehlay se ek khula ticket hai",
+formDuplicateBody:"Ticket {number} abhi bhi khula hai. Meherbani karke uske hal hone ka intezaar karein.",
+statusQueue:"Aap se pehlay log",statusNumberLabel:"Ticket Number",
+statusWaiting:"Intezaar mein",statusCalled:"Aap ko bulaya ja raha hai!",statusInProgress:"Kaam jaari hai",
+statusResolved:"Hal ho gaya",statusCancelled:"Cancel ho gaya",
+statusCalledBanner:"Aap ki baari hai! Meherbani karke IT desk par tashreef layen.",
+statusMessageTitle:"IT ka Paigham",
+pingButton:"IT ko Ping karein (zaroori)",pingCooldown:"Agla ping {time} mein",pingSent:"IT ko batadiya gaya hai",
+newTicketButton:"Naya ticket jama karein",
+langLabel:"Zubaan",themeLight:"Roshan",themeDark:"Tareek",
+adminLoginTitle:"IT Staff Login",adminLoginSub:"Sirf IT team ke liye",
+adminPasscodeLabel:"Passcode",adminPasscodePlaceholder:"Passcode darj karein",
+adminLoginButton:"Login",adminWrongPasscode:"Ghalat passcode",
+adminStaffLink:"IT staff login",backToTicket:"Mera ticket",
+adminDashTitle:"Ticket Queue",adminLogout:"Logout",
+adminSearchPlaceholder:"Naam, ID ya ticket # talash karein",adminAllBranches:"Tamam branches",
+adminCallSelected:"Muntakhib ko bulayen",adminCall:"Bulayen",adminStart:"Kaam shuru karein",
+adminMessage:"Paigham",adminSend:"Bhejein",adminMessagePlaceholder:"Iske liye paigham likhein...",
+adminResolve:"Hal ho gaya",adminCancel:"Cancel karein",adminNoTickets:"Abhi yahan kuch nahi",
+adminPinged:"{time} pehlay ping hua",adminHistory:"Hal shuda aur cancel ticket dekhein",
+adminHideHistory:"Chupayen",toastMsgSent:"Paigham bhej diya gaya",toastCalled:"Ticket bulaya gaya",
+laneWaiting:"Intezaar",laneCalled:"Bulaya Gaya",laneInProgress:"Kaam Jaari"},
+
+hi:{appTitle:"आईटी हेल्प डेस्क",appSubtitle:"हमें बताएं क्या समस्या है — हम संभाल लेंगे",
+formNameLabel:"पूरा नाम",formNamePlaceholder:"उदाहरण: अहमद खान",
+formEmployeeIdLabel:"कर्मचारी आईडी",formEmployeeIdPlaceholder:"उदाहरण: 10234",
+formTeamLabel:"आपकी टीम",formTeamPlaceholder:"अपनी टीम चुनें",
+formBranchLabel:"आपकी शाखा",formBranchPlaceholder:"अपनी शाखा चुनें",
+formProblemLabel:"समस्या क्या है?",formProblemPlaceholder:"समस्या चुनें",
+formDescribeLabel:"कृपया अपनी समस्या लिखें",formDescribePlaceholder:"यहाँ लिखें...",
+formSubmit:"टिकट जमा करें",formRequired:"कृपया सभी फ़ील्ड भरें",
+formDuplicateTitle:"आपका पहले से एक खुला टिकट है",
+formDuplicateBody:"टिकट {number} अभी भी खुला है। कृपया इसके हल होने की प्रतीक्षा करें।",
+statusQueue:"आपसे पहले लोग",statusNumberLabel:"टिकट नंबर",
+statusWaiting:"प्रतीक्षा में",statusCalled:"आपको बुलाया जा रहा है!",statusInProgress:"कार्य जारी है",
+statusResolved:"हल हो गया",statusCancelled:"रद्द हो गया",
+statusCalledBanner:"आपकी बारी है! कृपया आईटी डेस्क पर जाएं।",
+statusMessageTitle:"आईटी का संदेश",
+pingButton:"आईटी को पिंग करें (ज़रूरी)",pingCooldown:"अगला पिंग {time} में",pingSent:"आईटी को सूचित कर दिया गया है",
+newTicketButton:"नया टिकट जमा करें",
+langLabel:"भाषा",themeLight:"हल्का",themeDark:"गहरा",
+adminLoginTitle:"आईटी स्टाफ लॉगिन",adminLoginSub:"केवल आईटी टीम के लिए",
+adminPasscodeLabel:"पासकोड",adminPasscodePlaceholder:"पासकोड डालें",
+adminLoginButton:"लॉग इन करें",adminWrongPasscode:"गलत पासकोड",
+adminStaffLink:"आईटी स्टाफ लॉगिन",backToTicket:"मेरा टिकट",
+adminDashTitle:"टिकट कतार",adminLogout:"लॉग आउट",
+adminSearchPlaceholder:"नाम, आईडी या टिकट # खोजें",adminAllBranches:"सभी शाखाएं",
+adminCallSelected:"चयनित को बुलाएं",adminCall:"बुलाएं",adminStart:"कार्य शुरू करें",
+adminMessage:"संदेश",adminSend:"भेजें",adminMessagePlaceholder:"इसके लिए संदेश लिखें...",
+adminResolve:"हल हो गया",adminCancel:"रद्द करें",adminNoTickets:"अभी यहां कुछ नहीं",
+adminPinged:"{time} पहले पिंग हुआ",adminHistory:"हल और रद्द टिकट देखें",
+adminHideHistory:"छुपाएं",toastMsgSent:"संदेश भेज दिया गया",toastCalled:"टिकट बुलाया गया",
+laneWaiting:"प्रतीक्षा",laneCalled:"बुलाया गया",laneInProgress:"कार्य जारी"},
+
+ne:{appTitle:"आईटी सहायता डेस्क",appSubtitle:"हामीलाई समस्या बताउनुहोस् — हामी हेर्छौं",
+formNameLabel:"पूरा नाम",formNamePlaceholder:"उदाहरण: अहमद खान",
+formEmployeeIdLabel:"कर्मचारी आईडी",formEmployeeIdPlaceholder:"उदाहरण: 10234",
+formTeamLabel:"तपाईंको टिम",formTeamPlaceholder:"आफ्नो टिम छान्नुहोस्",
+formBranchLabel:"तपाईंको शाखा",formBranchPlaceholder:"आफ्नो शाखा छान्नुहोस्",
+formProblemLabel:"समस्या के हो?",formProblemPlaceholder:"समस्या छान्नुहोस्",
+formDescribeLabel:"कृपया आफ्नो समस्या लेख्नुहोस्",formDescribePlaceholder:"यहाँ लेख्नुहोस्...",
+formSubmit:"टिकट पेश गर्नुहोस्",formRequired:"कृपया सबै फिल्ड भर्नुहोस्",
+formDuplicateTitle:"तपाईंको पहिले नै एउटा खुला टिकट छ",
+formDuplicateBody:"टिकट {number} अझै खुला छ। कृपया समाधान नभएसम्म पर्खनुहोस्।",
+statusQueue:"तपाईं भन्दा अगाडि मानिसहरू",statusNumberLabel:"टिकट नम्बर",
+statusWaiting:"पर्खाइमा",statusCalled:"तपाईंलाई बोलाइँदैछ!",statusInProgress:"काम भइरहेको छ",
+statusResolved:"समाधान भयो",statusCancelled:"रद्द भयो",
+statusCalledBanner:"तपाईंको पालो आयो! कृपया आईटी डेस्कमा जानुहोस्।",
+statusMessageTitle:"आईटीबाट सन्देश",
+pingButton:"आईटीलाई पिङ गर्नुहोस् (जरुरी)",pingCooldown:"अर्को पिङ {time} मा",pingSent:"आईटीलाई सूचित गरियो",
+newTicketButton:"नयाँ टिकट पेश गर्नुहोस्",
+langLabel:"भाषा",themeLight:"उज्यालो",themeDark:"अँध्यारो",
+adminLoginTitle:"आईटी स्टाफ लगइन",adminLoginSub:"आईटी टिमको लागि मात्र",
+adminPasscodeLabel:"पासकोड",adminPasscodePlaceholder:"पासकोड लेख्नुहोस्",
+adminLoginButton:"लगइन गर्नुहोस्",adminWrongPasscode:"गलत पासकोड",
+adminStaffLink:"आईटी स्टाफ लगइन",backToTicket:"मेरो टिकट",
+adminDashTitle:"टिकट लाइन",adminLogout:"लगआउट",
+adminSearchPlaceholder:"नाम, आईडी वा टिकट # खोज्नुहोस्",adminAllBranches:"सबै शाखाहरू",
+adminCallSelected:"छानिएकालाई बोलाउनुहोस्",adminCall:"बोलाउनुहोस्",adminStart:"काम सुरु गर्नुहोस्",
+adminMessage:"सन्देश",adminSend:"पठाउनुहोस्",adminMessagePlaceholder:"यसको लागि सन्देश लेख्नुहोस्...",
+adminResolve:"समाधान भयो",adminCancel:"रद्द गर्नुहोस्",adminNoTickets:"अहिले यहाँ केही छैन",
+adminPinged:"{time} अघि पिङ गरियो",adminHistory:"समाधान र रद्द टिकटहरू हेर्नुहोस्",
+adminHideHistory:"लुकाउनुहोस्",toastMsgSent:"सन्देश पठाइयो",toastCalled:"टिकट बोलाइयो",
+laneWaiting:"पर्खाइ",laneCalled:"बोलाइयो",laneInProgress:"काम जारी"},
+
+am:{appTitle:"የአይቲ ድጋፍ ጣቢያ",appSubtitle:"ችግሩን ንገሩን — እኛ እናስተናግደዋለን",
+formNameLabel:"ሙሉ ስም",formNamePlaceholder:"ለምሳሌ፡ አህመድ ካን",
+formEmployeeIdLabel:"የሰራተኛ መታወቂያ",formEmployeeIdPlaceholder:"ለምሳሌ፡ 10234",
+formTeamLabel:"የእርስዎ ቡድን",formTeamPlaceholder:"ቡድንዎን ይምረጡ",
+formBranchLabel:"የእርስዎ ቅርንጫፍ",formBranchPlaceholder:"ቅርንጫፍዎን ይምረጡ",
+formProblemLabel:"ችግሩ ምንድን ነው?",formProblemPlaceholder:"ችግር ይምረጡ",
+formDescribeLabel:"እባክዎ ችግርዎን ይግለጹ",formDescribePlaceholder:"እዚህ ይጻፉ...",
+formSubmit:"ትኬት ያስገቡ",formRequired:"እባክዎ ሁሉንም መስኮች ይሙሉ",
+formDuplicateTitle:"ቀድሞውኑ ክፍት ትኬት አለዎት",
+formDuplicateBody:"ትኬት {number} አሁንም ክፍት ነው። እባክዎ እስኪፈታ ይጠብቁ።",
+statusQueue:"ከእርስዎ በፊት ያሉ ሰዎች",statusNumberLabel:"የትኬት ቁጥር",
+statusWaiting:"በመጠባበቅ ላይ",statusCalled:"እየተጠሩ ነው!",statusInProgress:"በሂደት ላይ",
+statusResolved:"ተፈትቷል",statusCancelled:"ተሰርዟል",
+statusCalledBanner:"ተራዎ ደርሷል! እባክዎ ወደ አይቲ ጠረጴዛ ይሂዱ።",
+statusMessageTitle:"ከአይቲ የተላከ መልእክት",
+pingButton:"አይቲን ያሳውቁ (አስቸኳይ)",pingCooldown:"ቀጣይ ማሳወቂያ በ{time}",pingSent:"አይቲ ተነግሮታል",
+newTicketButton:"አዲስ ትኬት ያስገቡ",
+langLabel:"ቋንቋ",themeLight:"ብሩህ",themeDark:"ጨለማ",
+adminLoginTitle:"የአይቲ ሰራተኛ መግቢያ",adminLoginSub:"ለአይቲ ቡድን አባላት ብቻ",
+adminPasscodeLabel:"የይለፍ ኮድ",adminPasscodePlaceholder:"የይለፍ ኮድ ያስገቡ",
+adminLoginButton:"ግባ",adminWrongPasscode:"የተሳሳተ የይለፍ ኮድ",
+adminStaffLink:"የአይቲ ሰራተኛ መግቢያ",backToTicket:"ትኬቴ",
+adminDashTitle:"የትኬት ወረፋ",adminLogout:"ውጣ",
+adminSearchPlaceholder:"ስም፣ መታወቂያ ወይም ትኬት # ይፈልጉ",adminAllBranches:"ሁሉም ቅርንጫፎች",
+adminCallSelected:"የተመረጡትን ጥራ",adminCall:"ጥራ",adminStart:"ስራ ጀምር",
+adminMessage:"መልእክት",adminSend:"ላክ",adminMessagePlaceholder:"ለዚህ ሰው መልእክት ይጻፉ...",
+adminResolve:"ፍታ",adminCancel:"ሰርዝ",adminNoTickets:"አሁን እዚህ ምንም የለም",
+adminPinged:"ከ{time} በፊት ተጠቁሟል",adminHistory:"የተፈቱ እና የተሰረዙ ትኬቶችን አሳይ",
+adminHideHistory:"ደብቅ",toastMsgSent:"መልእክት ተልኳል",toastCalled:"ትኬት ተጠርቷል",
+laneWaiting:"በመጠባበቅ",laneCalled:"ተጠርቷል",laneInProgress:"በሂደት ላይ"}
+};
+
+const PROBLEM_T = {
+en:{"Account ban":"Account ban","Account boosting":"Account boosting","Account freeze":"Account freeze",
+"Getting issued a new phone":"Getting issued a new phone","Need extra account":"Need extra account","Others":"Others",
+"Personal problems":"Personal problems","Phone not charging":"Phone not charging","Phone's display not coming":"Phone's display not coming"},
+ur:{"Account ban":"Account ban ho gaya","Account boosting":"Account boosting","Account freeze":"Account freeze ho gaya",
+"Getting issued a new phone":"Naya phone lena hai","Need extra account":"Extra account chahiye","Others":"Doosra",
+"Personal problems":"Zaati masail","Phone not charging":"Phone charge nahi ho raha","Phone's display not coming":"Phone ki display nahi aa rahi"},
+hi:{"Account ban":"खाता प्रतिबंधित हो गया","Account boosting":"अकाउंट बूस्टिंग","Account freeze":"खाता फ़्रीज़ हो गया",
+"Getting issued a new phone":"नया फोन चाहिए","Need extra account":"अतिरिक्त खाता चाहिए","Others":"अन्य",
+"Personal problems":"व्यक्तिगत समस्या","Phone not charging":"फोन चार्ज नहीं हो रहा","Phone's display not coming":"फोन की डिस्प्ले नहीं आ रही"},
+ne:{"Account ban":"खाता ब्यान भयो","Account boosting":"एकाउन्ट बुस्टिङ","Account freeze":"खाता फ्रिज भयो",
+"Getting issued a new phone":"नयाँ फोन चाहियो","Need extra account":"थप एकाउन्ट चाहियो","Others":"अन्य",
+"Personal problems":"व्यक्तिगत समस्या","Phone not charging":"फोन चार्ज भइरहेको छैन","Phone's display not coming":"फोनको डिस्प्ले आइरहेको छैन"},
+am:{"Account ban":"አካውንት ታግዷል","Account boosting":"አካውንት ማሳደግ","Account freeze":"አካውንት ቀዝቅዟል",
+"Getting issued a new phone":"አዲስ ስልክ ማግኘት","Need extra account":"ተጨማሪ አካውንት ያስፈልጋል","Others":"ሌላ",
+"Personal problems":"የግል ችግሮች","Phone not charging":"ስልኩ አይሞላም","Phone's display not coming":"የስልኩ ስክሪን አይታይም"}
+};
+
+function tt(key){ const d = T[state.lang]||T.en; return d[key] !== undefined ? d[key] : (T.en[key]||key); }
+function tp(problem){ const d = PROBLEM_T[state.lang]||PROBLEM_T.en; return d[problem]||problem; }
+function fmt(str,params){ let out = str; for(const k in params){ out = out.replace('{'+k+'}', params[k]); } return out; }
+
+/* =========================================================
+   STATE
+========================================================= */
+const state = {
+  route:'form', lang:'en', theme:'light',
+  myTicketId:null, prevStatus:undefined,
+  isAdmin:false, adminSelected:new Set(),
+  adminBranch:'all', adminSearch:'', adminMsgOpen:null, historyOpen:false,
+  formState:{name:'',employeeId:'',team:'',branch:'',problem:'',description:''},
+  formError:null, duplicateInfo:null,
+  audioCtx:null, ticketSnapshot:null
+};
+
+/* =========================================================
+   UTIL
+========================================================= */
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,9); }
+function pad2(n){ return n<10?'0'+n:''+n; }
+function todayKey(){ const d=new Date(); return pad2(d.getMonth()+1)+pad2(d.getDate()); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>el.classList.remove('show'), 2400);
+}
+function timeAgo(ms){
+  const s = Math.max(0, Math.floor((Date.now()-ms)/1000));
+  if(s<60) return s+'s';
+  const m = Math.floor(s/60);
+  if(m<60) return m+'m';
+  const h = Math.floor(m/60);
+  return h+'h';
+}
+function countdown(ms){
+  const s = Math.max(0, Math.ceil(ms/1000));
+  const m = Math.floor(s/60); const r = s%60;
+  return m+':'+pad2(r);
+}
+
+/* =========================================================
+   STORAGE HELPERS
+========================================================= */
+async function sGet(key, shared){
+  try{ const r = await window.storage.get(key, !!shared); return r ? r.value : null; }
+  catch(e){ return null; }
+}
+async function sSet(key, value, shared){
+  try{ return await window.storage.set(key, value, !!shared); }
+  catch(e){ return null; }
+}
+async function sList(prefix, shared){
+  try{ const r = await window.storage.list(prefix, !!shared); return r ? r.keys : []; }
+  catch(e){ return []; }
+}
+async function getTicket(id){
+  const v = await sGet('ticket:'+id, true);
+  if(!v) return null;
+  try{ return JSON.parse(v); }catch(e){ return null; }
+}
+async function saveTicket(t){
+  await sSet('ticket:'+t.id, JSON.stringify(t), true);
+}
+async function listTickets(){
+  const keys = await sList('ticket:', true);
+  const out = [];
+  for(const k of keys){
+    const v = await sGet(k, true);
+    if(v){ try{ out.push(JSON.parse(v)); }catch(e){} }
+  }
+  out.sort((a,b)=>a.submittedAt-b.submittedAt);
+  return out;
+}
+async function nextTicketNumber(branch){
+  const code = BRANCH_CODES[branch] || 'GEN';
+  const day = todayKey();
+  const key = 'counter:'+code+':'+day;
+  let n = 1;
+  const cur = await sGet(key, true);
+  if(cur){ n = (parseInt(cur,10)||0) + 1; }
+  await sSet(key, String(n), true);
+  return code+'-'+day+'-'+String(n).padStart(3,'0');
+}
+
+/* =========================================================
+   AUDIO / VIBRATION
+========================================================= */
+function unlockAudio(){
+  if(state.audioCtx) return;
+  try{
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    state.audioCtx = new Ctx();
+  }catch(e){}
+}
+function playCalledSound(){
+  try{
+    if(!state.audioCtx){ unlockAudio(); }
+    const ctx = state.audioCtx;
+    if(!ctx) return;
+    if(ctx.state === 'suspended'){ ctx.resume(); }
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type = 'sine'; o.connect(g); g.connect(ctx.destination);
+    const now = ctx.currentTime;
+    g.gain.setValueAtTime(0.0001, now);
+    o.frequency.setValueAtTime(760, now);
+    g.gain.exponentialRampToValueAtTime(0.28, now+0.03);
+    o.frequency.setValueAtTime(760, now+0.14);
+    o.frequency.setValueAtTime(1000, now+0.16);
+    g.gain.exponentialRampToValueAtTime(0.0001, now+0.55);
+    o.start(now); o.stop(now+0.6);
+  }catch(e){}
+}
+function vibrateCalled(){
+  try{ if(navigator.vibrate) navigator.vibrate([220,90,220,90,320]); }catch(e){}
+}
+
+/* =========================================================
+   RENDER: SHELL
+========================================================= */
+function topbarHtml(showBack){
+  const langOpts = ['en','ur','hi','ne','am'].map(l=>{
+    const names = {en:'English',ur:'Roman Urdu',hi:'हिंदी',ne:'नेपाली',am:'አማርኛ'};
+    return `<option value="${l}" ${state.lang===l?'selected':''}>${names[l]}</option>`;
+  }).join('');
+  return `
+  <div class="topbar">
+    <div class="brand"><span class="dot"></span> ${escapeHtml(tt('appTitle'))}</div>
+    <div class="topbar-controls">
+      ${showBack ? `<button class="control" data-action="go-status">${escapeHtml(tt('backToTicket'))}</button>` : ''}
+      <select class="control" id="lang-select">${langOpts}</select>
+      <button class="iconbtn" id="theme-toggle" title="${escapeHtml(tt('themeLight'))}/${escapeHtml(tt('themeDark'))}">${state.theme==='light'?'🌙':'☀️'}</button>
+    </div>
+  </div>`;
+}
+function boardHtml(str, small){
+  const chars = String(str).split('');
+  const size = small ? 'small' : '';
+  return `<div class="board-wrap"><div class="board ${size}">` +
+    chars.map(c=>`<div class="tile ${c==='-'?'dash':''}">${c==='-'?'':escapeHtml(c)}</div>`).join('') +
+    `</div></div>`;
+}
+
+/* =========================================================
+   RENDER: FORM
+========================================================= */
+function renderForm(){
+  const fs = state.formState;
+  const err = state.formError;
+  const teamOpts = TEAMS.map(t=>`<option value="${t}" ${fs.team===t?'selected':''}>Team ${t}</option>`).join('');
+  const branchOpts = BRANCHES.map(b=>`<option value="${b}" ${fs.branch===b?'selected':''}>${b} Branch</option>`).join('');
+  const problemOpts = PROBLEMS.map(p=>`<option value="${p}" ${fs.problem===p?'selected':''}>${escapeHtml(tp(p))}</option>`).join('');
+
+  document.getElementById('app').innerHTML = `
+    ${topbarHtml(false)}
+    <main>
+      <div class="card">
+        <h1>${escapeHtml(tt('appTitle'))}</h1>
+        <p class="sub">${escapeHtml(tt('appSubtitle'))}</p>
+
+        ${state.duplicateInfo ? `
+        <div class="notice warn">
+          <strong>${escapeHtml(tt('formDuplicateTitle'))}</strong><br>
+          ${escapeHtml(fmt(tt('formDuplicateBody'), {number: state.duplicateInfo}))}
+        </div>` : ''}
+
+        <form id="ticket-form" novalidate>
+          <div class="field ${err==='name'?'err':''}">
+            <label>${escapeHtml(tt('formNameLabel'))}</label>
+            <input type="text" id="f-name" placeholder="${escapeHtml(tt('formNamePlaceholder'))}" value="${escapeHtml(fs.name)}" autocomplete="off">
+            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
+          </div>
+          <div class="field ${err==='employeeId'?'err':''}">
+            <label>${escapeHtml(tt('formEmployeeIdLabel'))}</label>
+            <input type="number" inputmode="numeric" id="f-eid" placeholder="${escapeHtml(tt('formEmployeeIdPlaceholder'))}" value="${escapeHtml(fs.employeeId)}">
+            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
+          </div>
+          <div class="field ${err==='team'?'err':''}">
+            <label>${escapeHtml(tt('formTeamLabel'))}</label>
+            <select id="f-team">
+              <option value="" disabled ${!fs.team?'selected':''}>${escapeHtml(tt('formTeamPlaceholder'))}</option>
+              ${teamOpts}
+            </select>
+            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
+          </div>
+          <div class="field ${err==='branch'?'err':''}">
+            <label>${escapeHtml(tt('formBranchLabel'))}</label>
+            <select id="f-branch">
+              <option value="" disabled ${!fs.branch?'selected':''}>${escapeHtml(tt('formBranchPlaceholder'))}</option>
+              ${branchOpts}
+            </select>
+            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
+          </div>
+          <div class="field ${err==='problem'?'err':''}">
+            <label>${escapeHtml(tt('formProblemLabel'))}</label>
+            <select id="f-problem">
+              <option value="" disabled ${!fs.problem?'selected':''}>${escapeHtml(tt('formProblemPlaceholder'))}</option>
+              ${problemOpts}
+            </select>
+            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
+          </div>
+          <div class="field ${err==='description'?'err':''}" id="describe-wrap" style="display:${fs.problem==='Others'?'block':'none'}">
+            <label>${escapeHtml(tt('formDescribeLabel'))}</label>
+            <textarea id="f-desc" placeholder="${escapeHtml(tt('formDescribePlaceholder'))}">${escapeHtml(fs.description)}</textarea>
+            <div class="errtext">${escapeHtml(tt('formRequired'))}</div>
+          </div>
+          <button type="submit" class="btn-primary">${escapeHtml(tt('formSubmit'))}</button>
+        </form>
+        <div class="link-row"><a data-action="show-admin-login">${escapeHtml(tt('adminStaffLink'))}</a></div>
+      </div>
+    </main>
+  `;
+  bindForm();
+}
+function bindForm(){
+  const form = document.getElementById('ticket-form');
+  const $ = id=>document.getElementById(id);
+  $('f-name').addEventListener('input', e=>state.formState.name = e.target.value);
+  $('f-eid').addEventListener('input', e=>state.formState.employeeId = e.target.value.replace(/[^0-9]/g,''));
+  $('f-team').addEventListener('change', e=>state.formState.team = e.target.value);
+  $('f-branch').addEventListener('change', e=>state.formState.branch = e.target.value);
+  $('f-problem').addEventListener('change', e=>{
+    state.formState.problem = e.target.value;
+    document.getElementById('describe-wrap').style.display = e.target.value==='Others' ? 'block' : 'none';
+  });
+  $('f-desc') && $('f-desc').addEventListener('input', e=>state.formState.description = e.target.value);
+  form.addEventListener('submit', onSubmitTicket);
+}
+async function onSubmitTicket(e){
+  e.preventDefault();
+  unlockAudio();
+  const fs = state.formState;
+  let missing = null;
+  if(!fs.name.trim()) missing='name';
+  else if(!fs.employeeId.trim()) missing='employeeId';
+  else if(!fs.team) missing='team';
+  else if(!fs.branch) missing='branch';
+  else if(!fs.problem) missing='problem';
+  else if(fs.problem==='Others' && !fs.description.trim()) missing='description';
+  if(missing){ state.formError = missing; state.duplicateInfo=null; renderForm(); return; }
+
+  const submitBtn = document.querySelector('#ticket-form button[type="submit"]');
+  submitBtn.disabled = true; submitBtn.style.opacity = '0.6';
+
+  const tickets = await listTickets();
+  const openOne = tickets.find(t => t.employeeId===fs.employeeId && ['waiting','called','in_progress'].includes(t.status));
+  if(openOne){
+    state.duplicateInfo = openOne.ticketNumber;
+    state.myTicketId = openOne.id;
+    await sSet('my-ticket-id', openOne.id, false);
+    submitBtn.disabled=false; submitBtn.style.opacity='1';
+    renderForm();
+    return;
+  }
+
+  const ticketNumber = await nextTicketNumber(fs.branch);
+  const ticket = {
+    id: uid(), ticketNumber,
+    name: fs.name.trim(), employeeId: fs.employeeId.trim(),
+    team: fs.team, branch: fs.branch, problem: fs.problem,
+    description: fs.problem==='Others' ? fs.description.trim() : '',
+    status:'waiting', submittedAt: Date.now(), calledAt:null,
+    lastPingAt:null, pingCount:0, message:null, messageAt:null
+  };
+  await saveTicket(ticket);
+  await sSet('my-ticket-id', ticket.id, false);
+  state.myTicketId = ticket.id;
+  state.prevStatus = 'waiting';
+  state.formState = {name:'',employeeId:'',team:'',branch:'',problem:'',description:''};
+  state.formError = null; state.duplicateInfo = null;
+  state.route = 'status';
+  renderStatus();
+}
+
+/* =========================================================
+   RENDER: STATUS
+========================================================= */
+async function renderStatus(){
+  const t = await getTicket(state.myTicketId);
+  if(!t){
+    state.route='form'; state.myTicketId=null;
+    renderForm(); return;
+  }
+  state.ticketSnapshot = t;
+  if(state.prevStatus===undefined) state.prevStatus = t.status;
+
+  let queuePos = null;
+  if(t.status==='waiting'){
+    const all = await listTickets();
+    const waitingSameBranch = all.filter(x=>x.branch===t.branch && x.status==='waiting');
+    const idx = waitingSameBranch.findIndex(x=>x.id===t.id);
+    queuePos = idx>=0 ? idx : waitingSameBranch.length;
+  }
+
+  const pillClass = t.status;
+  const pillText = t.status==='waiting'?tt('statusWaiting') : t.status==='called'?tt('statusCalled')
+    : t.status==='in_progress'?tt('statusInProgress') : t.status==='resolved'?tt('statusResolved') : tt('statusCancelled');
+
+  const now = Date.now();
+  const canPing = ['waiting','in_progress'].includes(t.status);
+  const sinceLastPing = t.lastPingAt ? now - t.lastPingAt : Infinity;
+  const onCooldown = sinceLastPing < PING_COOLDOWN_MS;
+
+  document.getElementById('app').innerHTML = `
+    ${topbarHtml(false)}
+    <main>
+      <div class="card status-center">
+        ${t.status==='called' ? `<div class="called-banner">🔔 ${escapeHtml(tt('statusCalledBanner'))}</div>` : ''}
+
+        ${boardHtml(t.ticketNumber, false)}
+        <div class="queue-label" style="margin-top:-14px; margin-bottom:20px;">${escapeHtml(tt('statusNumberLabel'))}</div>
+
+        <div class="status-pill ${pillClass}"><span class="blip"></span>${escapeHtml(pillText)}</div>
+
+        ${t.status==='waiting' ? `
+          <div class="queue-num">${queuePos}</div>
+          <div class="queue-label">${escapeHtml(tt('statusQueue'))}</div>
+        ` : ''}
+
+        ${t.message ? `
+        <div class="message-card">
+          <div class="m-title">${escapeHtml(tt('statusMessageTitle'))}</div>
+          <div class="m-body">${escapeHtml(t.message)}</div>
+        </div>` : ''}
+
+        ${['resolved','cancelled'].includes(t.status) ? `
+          <button class="btn-primary" data-action="new-ticket">${escapeHtml(tt('newTicketButton'))}</button>
+        ` : `
+          <button class="ping-btn" id="ping-btn" ${(!canPing || onCooldown) ? 'disabled' : ''}>
+            ${onCooldown ? escapeHtml(fmt(tt('pingCooldown'),{time: countdown(PING_COOLDOWN_MS - sinceLastPing)})) : '🚨 '+escapeHtml(tt('pingButton'))}
+          </button>
+        `}
+
+        <div class="link-row"><a data-action="show-admin-login">${escapeHtml(tt('adminStaffLink'))}</a></div>
+      </div>
+    </main>
+  `;
+
+  const pingBtn = document.getElementById('ping-btn');
+  if(pingBtn){
+    pingBtn.addEventListener('click', async ()=>{
+      unlockAudio();
+      const fresh = await getTicket(state.myTicketId);
+      if(!fresh) return;
+      fresh.lastPingAt = Date.now();
+      fresh.pingCount = (fresh.pingCount||0)+1;
+      await saveTicket(fresh);
+      toast(tt('pingSent'));
+      renderStatus();
+    });
+  }
+
+  if(state.prevStatus !== t.status){
+    if(t.status==='called'){
+      playCalledSound();
+      vibrateCalled();
+    }
+    state.prevStatus = t.status;
+  }
+}
+
+/* =========================================================
+   RENDER: ADMIN LOGIN
+========================================================= */
+function renderAdminLogin(){
+  document.getElementById('app').innerHTML = `
+    ${topbarHtml(!!state.myTicketId)}
+    <main>
+      <div class="card">
+        <h1>${escapeHtml(tt('adminLoginTitle'))}</h1>
+        <p class="sub">${escapeHtml(tt('adminLoginSub'))}</p>
+        ${state.formError==='passcode' ? `<div class="notice warn">${escapeHtml(tt('adminWrongPasscode'))}</div>` : ''}
+        <form id="admin-login-form">
+          <div class="field">
+            <label>${escapeHtml(tt('adminPasscodeLabel'))}</label>
+            <input type="password" id="a-pass" placeholder="${escapeHtml(tt('adminPasscodePlaceholder'))}">
+          </div>
+          <button type="submit" class="btn-primary">${escapeHtml(tt('adminLoginButton'))}</button>
+        </form>
+      </div>
+    </main>
+  `;
+  document.getElementById('admin-login-form').addEventListener('submit', e=>{
+    e.preventDefault();
+    const val = document.getElementById('a-pass').value;
+    if(val === ADMIN_PASSCODE){
+      state.isAdmin = true; state.formError=null;
+      state.route='admin';
+      renderAdmin();
+    }else{
+      state.formError='passcode';
+      renderAdminLogin();
+    }
+  });
+}
+
+/* =========================================================
+   RENDER: ADMIN DASHBOARD
+========================================================= */
+async function renderAdmin(){
+  if(!state.isAdmin){ state.route='admin-login'; renderAdminLogin(); return; }
+  let all = await listTickets();
+
+  if(state.adminBranch !== 'all') all = all.filter(t=>t.branch===state.adminBranch);
+  if(state.adminSearch.trim()){
+    const q = state.adminSearch.trim().toLowerCase();
+    all = all.filter(t => t.name.toLowerCase().includes(q) || t.employeeId.includes(q) || t.ticketNumber.toLowerCase().includes(q));
+  }
+
+  const waiting = all.filter(t=>t.status==='waiting');
+  const called = all.filter(t=>t.status==='called');
+  const inProgress = all.filter(t=>t.status==='in_progress');
+  const history = all.filter(t=>['resolved','cancelled'].includes(t.status)).sort((a,b)=>b.submittedAt-a.submittedAt);
+
+  const branchOpts = `<option value="all">${escapeHtml(tt('adminAllBranches'))}</option>` +
+    BRANCHES.map(b=>`<option value="${b}" ${state.adminBranch===b?'selected':''}>${b} Branch</option>`).join('');
+
+  function cardHtml(t, laneType){
+    const pinged = t.lastPingAt ? `<div class="tcard-pinged">🔔 ${escapeHtml(fmt(tt('adminPinged'),{time:timeAgo(t.lastPingAt)}))}</div>` : '';
+    const selectBox = laneType==='waiting' ? `<input type="checkbox" class="tcard-select" data-select="${t.id}" ${state.adminSelected.has(t.id)?'checked':''}>` : '';
+    let actions = '';
+    if(laneType==='waiting'){
+      actions = `<button data-act="call" data-id="${t.id}">${escapeHtml(tt('adminCall'))}</button>
+                 <button data-act="msg" data-id="${t.id}">${escapeHtml(tt('adminMessage'))}</button>
+                 <button class="danger" data-act="cancel" data-id="${t.id}">${escapeHtml(tt('adminCancel'))}</button>`;
+    }else if(laneType==='called'){
+      actions = `<button data-act="progress" data-id="${t.id}">${escapeHtml(tt('adminStart'))}</button>
+                 <button data-act="resolve" data-id="${t.id}">${escapeHtml(tt('adminResolve'))}</button>
+                 <button data-act="msg" data-id="${t.id}">${escapeHtml(tt('adminMessage'))}</button>
+                 <button class="danger" data-act="cancel" data-id="${t.id}">${escapeHtml(tt('adminCancel'))}</button>`;
+    }else{
+      actions = `<button data-act="resolve" data-id="${t.id}">${escapeHtml(tt('adminResolve'))}</button>
+                 <button data-act="msg" data-id="${t.id}">${escapeHtml(tt('adminMessage'))}</button>
+                 <button class="danger" data-act="cancel" data-id="${t.id}">${escapeHtml(tt('adminCancel'))}</button>`;
+    }
+    const problemLabel = t.problem==='Others' ? (t.description ? t.description : tp('Others')) : tp(t.problem);
+    const msgOpen = state.adminMsgOpen === t.id;
+    return `
+      <div class="tcard">
+        <div class="tcard-top">
+          <div>
+            ${selectBox}
+            <span class="tcard-num">${escapeHtml(t.ticketNumber)}</span>
+            <div class="tcard-name">${escapeHtml(t.name)}</div>
+          </div>
+        </div>
+        <div class="tcard-meta">ID ${escapeHtml(t.employeeId)} · Team ${escapeHtml(t.team)} · ${escapeHtml(t.branch)} Branch</div>
+        <div class="tcard-problem">${escapeHtml(problemLabel)}</div>
+        ${pinged}
+        <div class="tcard-actions">${actions}</div>
+        <div class="msg-box ${msgOpen?'open':''}" data-msgbox="${t.id}">
+          <textarea placeholder="${escapeHtml(tt('adminMessagePlaceholder'))}" data-msginput="${t.id}">${t.message?escapeHtml(t.message):''}</textarea>
+          <button data-act="sendmsg" data-id="${t.id}">${escapeHtml(tt('adminSend'))}</button>
+        </div>
+      </div>`;
+  }
+
+  function laneHtml(title, cls, list, laneType){
+    const showCallSelected = laneType==='waiting';
+    const selCount = laneType==='waiting' ? list.filter(t=>state.adminSelected.has(t.id)).length : 0;
+    return `
+    <div class="lane ${cls}">
+      <div class="lane-head">
+        <div class="lane-title"><span class="swatch"></span>${escapeHtml(title)}</div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="lane-count">${list.length}</span>
+          ${showCallSelected ? `<button class="call-selected-btn" id="call-selected-btn" ${selCount===0?'disabled':''}>${escapeHtml(tt('adminCallSelected'))} (${selCount})</button>` : ''}
+        </div>
+      </div>
+      ${list.length ? list.map(t=>cardHtml(t,laneType)).join('') : `<div class="empty-note">${escapeHtml(tt('adminNoTickets'))}</div>`}
+    </div>`;
+  }
+
+  document.getElementById('app').innerHTML = `
+    ${topbarHtml(false)}
+    <main>
+      <div class="admin-shell">
+        <div class="admin-top">
+          <h1>${escapeHtml(tt('adminDashTitle'))}</h1>
+          <div class="admin-filters">
+            <input type="text" id="admin-search" placeholder="${escapeHtml(tt('adminSearchPlaceholder'))}" value="${escapeHtml(state.adminSearch)}">
+            <select class="control" id="admin-branch-filter">${branchOpts}</select>
+            <button class="control" id="admin-logout">${escapeHtml(tt('adminLogout'))}</button>
+          </div>
+        </div>
+        <div class="lanes">
+          ${laneHtml(tt('laneWaiting'),'waiting',waiting,'waiting')}
+          ${laneHtml(tt('laneCalled'),'called',called,'called')}
+          ${laneHtml(tt('laneInProgress'),'in_progress',inProgress,'in_progress')}
+        </div>
+        <div class="history-toggle" id="history-toggle">${escapeHtml(state.historyOpen ? tt('adminHideHistory') : tt('adminHistory'))}</div>
+        <div class="history-list ${state.historyOpen?'open':''}">
+          ${history.length ? history.map(t=>`
+            <div class="history-row">
+              <span style="font-family:var(--font-mono); font-weight:700;">${escapeHtml(t.ticketNumber)}</span>
+              <span>${escapeHtml(t.name)}</span>
+              <span style="color:var(--ink-faint);">${escapeHtml(t.branch)}</span>
+              <span style="font-weight:700;">${t.status==='resolved'?escapeHtml(tt('statusResolved')):escapeHtml(tt('statusCancelled'))}</span>
+            </div>`).join('') : `<div class="empty-note">${escapeHtml(tt('adminNoTickets'))}</div>`}
+        </div>
+      </div>
+    </main>
+  `;
+  bindAdmin();
+}
+
+function bindAdmin(){
+  const $ = id=>document.getElementById(id);
+  $('admin-logout').addEventListener('click', ()=>{
+    state.isAdmin=false; state.route='form';
+    renderCurrentRoute();
+  });
+  $('admin-search').addEventListener('input', e=>{
+    state.adminSearch = e.target.value; renderAdmin();
+  });
+  $('admin-branch-filter').addEventListener('change', e=>{
+    state.adminBranch = e.target.value; renderAdmin();
+  });
+  $('history-toggle').addEventListener('click', ()=>{
+    state.historyOpen = !state.historyOpen; renderAdmin();
+  });
+  const callSelBtn = $('call-selected-btn');
+  if(callSelBtn){
+    callSelBtn.addEventListener('click', async ()=>{
+      const ids = Array.from(state.adminSelected);
+      for(const id of ids){
+        const t = await getTicket(id);
+        if(t && t.status==='waiting'){ t.status='called'; t.calledAt=Date.now(); await saveTicket(t); }
+      }
+      state.adminSelected.clear();
+      toast(tt('toastCalled'));
+      renderAdmin();
+    });
+  }
+  document.querySelectorAll('[data-select]').forEach(box=>{
+    box.addEventListener('change', e=>{
+      const id = e.target.getAttribute('data-select');
+      if(e.target.checked) state.adminSelected.add(id); else state.adminSelected.delete(id);
+      renderAdmin();
+    });
+  });
+  document.querySelectorAll('[data-act]').forEach(btn=>{
+    btn.addEventListener('click', async e=>{
+      const act = e.target.getAttribute('data-act');
+      const id = e.target.getAttribute('data-id');
+      if(act==='call'){
+        const t = await getTicket(id); if(t){ t.status='called'; t.calledAt=Date.now(); await saveTicket(t); toast(tt('toastCalled')); }
+        renderAdmin();
+      }else if(act==='progress'){
+        const t = await getTicket(id); if(t){ t.status='in_progress'; await saveTicket(t); }
+        renderAdmin();
+      }else if(act==='resolve'){
+        const t = await getTicket(id); if(t){ t.status='resolved'; await saveTicket(t); }
+        renderAdmin();
+      }else if(act==='cancel'){
+        const t = await getTicket(id); if(t){ t.status='cancelled'; await saveTicket(t); }
+        renderAdmin();
+      }else if(act==='msg'){
+        state.adminMsgOpen = state.adminMsgOpen===id ? null : id;
+        renderAdmin();
+      }else if(act==='sendmsg'){
+        const box = document.querySelector('[data-msginput="'+id+'"]');
+        const val = box ? box.value.trim() : '';
+        const t = await getTicket(id);
+        if(t){ t.message = val; t.messageAt = Date.now(); await saveTicket(t); }
+        state.adminMsgOpen = null;
+        toast(tt('toastMsgSent'));
+        renderAdmin();
+      }
+    });
+  });
+}
+
+/* =========================================================
+   ROUTING / GLOBAL EVENTS
+========================================================= */
+function renderCurrentRoute(){
+  if(state.route==='form') renderForm();
+  else if(state.route==='status') renderStatus();
+  else if(state.route==='admin-login') renderAdminLogin();
+  else if(state.route==='admin') renderAdmin();
+}
+
+document.addEventListener('click', e=>{
+  const goStatus = e.target.closest('[data-action="go-status"]');
+  const showLogin = e.target.closest('[data-action="show-admin-login"]');
+  const newTicket = e.target.closest('[data-action="new-ticket"]');
+  if(goStatus){ state.route='status'; renderStatus(); }
+  if(showLogin){ state.route='admin-login'; renderAdminLogin(); }
+  if(newTicket){
+    (async ()=>{
+      state.myTicketId = null; state.prevStatus = undefined;
+      await sSet('my-ticket-id', '', false);
+      state.route='form'; state.duplicateInfo=null; state.formError=null;
+      renderForm();
+    })();
+  }
+});
+
+document.addEventListener('change', e=>{
+  if(e.target.id === 'lang-select'){
+    state.lang = e.target.value;
+    sSet('lang', state.lang, false);
+    renderCurrentRoute();
+  }
+});
+document.addEventListener('click', e=>{
+  if(e.target.id === 'theme-toggle'){
+    state.theme = state.theme==='light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', state.theme);
+    sSet('theme', state.theme, false);
+    renderCurrentRoute();
+  }
+}, true);
+
+document.addEventListener('click', unlockAudio, {once:true});
+
+/* =========================================================
+   SYNC / TICK LOOPS
+========================================================= */
+setInterval(()=>{
+  if(state.route==='status') renderStatus();
+  else if(state.route==='admin') renderAdmin();
+}, SYNC_MS);
+
+setInterval(()=>{
+  const pingBtn = document.getElementById('ping-btn');
+  if(pingBtn && state.ticketSnapshot && state.ticketSnapshot.lastPingAt){
+    const remain = PING_COOLDOWN_MS - (Date.now()-state.ticketSnapshot.lastPingAt);
+    if(remain > 0 && pingBtn.disabled){
+      pingBtn.textContent = fmt(tt('pingCooldown'),{time:countdown(remain)});
+    }else if(remain<=0 && pingBtn.disabled){
+      renderStatus();
+    }
+  }
+}, TICK_MS);
+
+/* =========================================================
+   INIT
+========================================================= */
+(async function init(){
+  const savedLang = await sGet('lang', false);
+  if(savedLang) state.lang = savedLang;
+  const savedTheme = await sGet('theme', false);
+  if(savedTheme){ state.theme = savedTheme; document.documentElement.setAttribute('data-theme', savedTheme); }
+
+  const savedTicketId = await sGet('my-ticket-id', false);
+  if(savedTicketId){
+    const t = await getTicket(savedTicketId);
+    if(t){
+      state.myTicketId = savedTicketId;
+      state.prevStatus = t.status;
+      state.route = 'status';
+    }
+  }
+  renderCurrentRoute();
+})();
+</script>
+</body>
+</html>
